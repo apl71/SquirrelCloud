@@ -1,0 +1,36 @@
+/*
+    for app.html
+*/
+body {
+    color: #1a2a3a;
+}
+
+header {
+    background-color: #F4CD8A;
+}
+
+nav {
+    background-color: snow;
+}
+
+.navigate_link:hover {
+    background-color: #F4CD8A;
+    cursor: pointer;
+}
+
+iframe {
+    background-color: snow;
+}
+
+footer {
+    background-color: #cccccc;
+}
+
+.setting_section {
+    background-color: #eeeeee;
+    border-radius: 10px;
+}
+
+.tag_li, .tag {
+    background-color: #eedfc6;
+}

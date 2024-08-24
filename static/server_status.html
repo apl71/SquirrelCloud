@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="author" content="apl71" />
+    <title>Squirrel Cloud - Server Status</title>
+    <link rel="stylesheet" href="css/nut-theme.css">
+    <link rel="stylesheet" href="css/server_status.css">
+    <script src="js/server_status.js"></script>
+    <script src="js/utils.js"></script>
+</head>
+
+<body onload="load_disk_usage()">
+    <main>
+        <!-- Section of settings -->
+        <section class="setting_section">
+            <h2>Disk Usage</h2>
+            <ul>
+                <li>
+                    <label>Total Space: </label>
+                    <label id="total_space"></label>
+                </li>
+                <li>
+                    <label>Used Space: </label>
+                    <label id="used_space"></label>
+                </li>
+                <li>
+                    <label>Used Space by app: </label>
+                    <label id="app_used_space"></label>
+                </li>
+            </ul>
+        </section>
+    </main>
+</body>

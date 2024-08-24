@@ -1,0 +1,22 @@
+/* all preview item should be limited in preview section */
+.nonpdf_preview {
+    max-height: 100%;
+    max-width: 100%;
+    display: none;
+}
+
+#pdf_preview, #vid_preview {
+    height: 100%;
+    width: 100%;
+    display: none;
+}
+
+html, body {
+    height: 100%;
+    color: #1a2a3a;
+    margin: 0;
+}
+
+main {
+    height: 100%;
+}

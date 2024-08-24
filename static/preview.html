@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="author" content="apl71" />
+    <title>Squirrel Cloud - Preview</title>
+    <link rel="stylesheet" href="css/preview.css">
+    <script src="js/preview.js"></script>
+</head>
+
+<html>
+<body onload="load_preview()">
+
+<main id="preview">
+
+    <!-- for PDF and OFFICE preview -->
+    <embed id="pdf_preview" >
+
+    <!-- for TEXT preview -->
+    <pre id="text_preview" class="nonpdf_preview"></pre>
+
+    <!-- for IMAGE preview -->
+    <img id="image_preview" class="nonpdf_preview">
+
+    <!-- for VIDEO preview -->
+    <video id="vid_preview" controls></video>
+
+</main>
+
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="author" content="apl71" />
+        <title>Squirrel Cloud - App</title>
+        <script src="js/app.js"></script>
+        <script src="js/utils.js"></script>
+        <link rel="stylesheet" href="css/app.css">
+        <link rel="stylesheet" href="css/nut-theme.css">
+    </head>
+
+    <body onload="load_app()">
+        <header>
+            <img src="favicon.ico" id="logo">
+            <h1>Squirrel Cloud</h1>
+            <span id="version_number"></span>
+        </header>
+
+        <nav>
+            <ul id="navigate_list">
+                <li class="navigate_item"><a class="navigate_link" onclick="to_page('file.html')">File</a></li>
+                <li class="navigate_item"><a class="navigate_link" onclick="to_page('setting.html')">Setting</a></li>
+                <li class="navigate_item"><a class="navigate_link" onclick="to_page('server_status.html')">Server Status</a></li>
+                <li class="navigate_item"><a class="navigate_link" onclick="to_page('account.html')">Account</a></li>
+                <!--
+                <li class="navigate_item"><a class="navigate_link" onclick="to_page('task.html')">Task</a></li>
+                -->
+            </ul>
+        </nav>
+
+        <iframe src="file.html" id="frame"></iframe>
+
+        <footer>
+            <p id="footer_title">Squirrel Cloud by apl71</p>
+            <a class="footer_link" href="https://github.com/apl71/SquirrelCloud">Github</a>
+        </footer>
+    </body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="author" content="apl71" />
+    <title>Squirrel Cloud - File</title>
+    <link rel="stylesheet" href="css/nut-theme.css">
+    <link rel="stylesheet" href="css/file.css">
+    <script src="js/file.js"></script>
+    <script src="js/utils.js"></script>
+</head>
+
+<html>
+<body onload="load_files()">
+    <main>
+        <!-- Section of files -->
+        <section id="nav_section">
+            <!-- form of current path -->
+            <div id="current_path_row">
+                <form id="current_path_form">
+                    <input type="text" id="current_path" value="/">
+                    <button type="button" onclick="load_files()">Go</button>
+                </form>
+                <button onclick="mkdir()">New directory</button>
+                <button onclick="to_parent()">⬅️</button>
+                <button onclick="to_home()">🏠</button>
+            </div>
+
+            <!-- form of search -->
+            <form id="search_form">
+                <input type="text" id="search">
+                <button type="button" onclick="search_file()">Search</button>
+            </form>
+        </section>
+
+        <section id="file_section">
+
+            <table id="file_table">
+                <tr>
+                    <th></th> <!-- file or directory icon -->
+                    <th>Name</th>
+                    <th>Size</th>
+                    <th>Tags</th>
+                    <th>Remark</th>
+                    <th>Time Created</th>
+                    <th>Delete</th>
+                    <th>Pin</th>
+                    <th>Share</th>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Section of uploading function -->
+        <section id="upload_section">
+            <p>Upload Your file here.</p>
+            <form>
+                <input type="file" name="file" id="file">
+                <button type="button" onclick="upload_file()">Upload!</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

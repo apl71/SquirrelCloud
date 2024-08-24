@@ -1,0 +1,120 @@
+html, body {
+    height: 100%;
+    color: #1a2a3a;
+    margin: 0;
+}
+
+main {
+    flex: 5;
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    padding-left: 7px;
+    padding-right: 7px;
+    /* border-right: #4a5a6a 1px dashed; */
+}
+
+#current_path_row {
+    /* padding-right: 7px;
+    border-right: #4a5a6a 1px dashed;*/
+    padding-bottom: 5px;
+}
+
+/*
+    file section
+*/
+#file_section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    /* padding-right: 7px;
+    border-right: #4a5a6a 1px dashed;*/
+    gap: 5px;
+    overflow: auto;
+}
+
+/* [-----------current path------------] [GO] [New dir] */
+#current_path_row {
+    display: flex;
+    flex-direction: row;
+    gap: 3px;
+}
+
+#current_path_form {
+    display: flex;
+    flex-direction: row;
+    gap: 3px;
+    flex: 1;
+}
+
+#current_path {
+    flex: 1;
+}
+
+/* [---------------search----------------] [Search] */
+#search_form {
+    display: flex;
+    flex-direction: row;
+    gap: 3px;
+}
+
+#search {
+    flex: 1;
+}
+
+/* file table */
+#file_table {
+    overflow-x: scroll;
+}
+
+td {
+    min-height: 35;
+}
+
+.icon {
+    width: 32px;
+    height: 32px;
+}
+
+/* tag */
+.tag {
+    border-radius: 5px;
+    padding: 5px 8px 5px 8px;
+}
+
+.filename {
+    padding-left: 2px;
+}
+
+/* remark */
+/* [id$='_remark_container'] {
+    height: 100%;
+    display: flex;
+}
+
+[id$='_remark'] {
+    flex: 1;
+} */
+[id$='_remark'] {
+    width: 80%;
+}
+/* text align for create time, delete button, pin/unpin button */
+.create_time {
+    text-align: center;
+}
+/* .delete_td, .pin_td, .share_td {
+    display: flex;
+    justify-content: center;
+} */
+
+/*
+    upload section
+*/
+#upload_section {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 7px;
+}
