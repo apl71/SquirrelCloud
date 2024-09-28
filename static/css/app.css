@@ -48,7 +48,7 @@ footer {
 
 /*
     header:
-    (logo)(title)(version)----------------
+    (logo)(title)(version)----------------(logout)
 */
 header {
     display: flex;
@@ -63,6 +63,11 @@ header {
 
 #version_number {
     padding-left: 5px;
+}
+
+#logout {
+    margin-left: auto;
+    margin-right: 5px;
 }
 
 /*

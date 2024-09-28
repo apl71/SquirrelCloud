@@ -16,3 +16,16 @@ async function load_app() {
     let version = await get_version();
     document.getElementById("version_number").innerText = version;
 }
+
+async function logout() {
+    var response = await fetch("/api/logout", {
+        method: "DELETE",
+    });
+    response = await response.json();
+    if (response["result"] == "OK") {
+        alert("Success. Redirecting.");
+        window.location.href = "/login.html";
+    } else {
+        alert("Fail to logout.");
+    }
+}
