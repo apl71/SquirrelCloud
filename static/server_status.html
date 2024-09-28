@@ -9,9 +9,9 @@
     <script src="js/utils.js"></script>
 </head>
 
-<body onload="load_disk_usage()">
+<body onload="initialize_server_status()">
     <main>
-        <!-- Section of settings -->
+        <!-- Section of disk usage -->
         <section class="setting_section">
             <h2>Disk Usage</h2>
             <ul>
@@ -28,6 +28,15 @@
                     <label id="app_used_space"></label>
                 </li>
             </ul>
+        </section>
+
+        <!-- Section for updating server -->
+        <section class="setting_section">
+            <h2>Server Version</h2>
+            <p>Current version:<label id="current_version">fetching...</label></p>
+            <p>Latest version:<label id="latest_version">fetching...</label></p>
+            <button onclick="update_server()">Update</button>
+            <p id="update_message"></p>
         </section>
     </main>
 </body>

@@ -31,3 +31,15 @@ async function get_version() {
         return "ERROR LOAD VERSION";
     }
 }
+
+async function get_latest_version() {
+    var response = await fetch("/api/check_update", {
+        method: "GET"
+    });
+    response = await response.json();
+    if (response["result"] == "OK") {
+        return response["message"];
+    } else {
+        return "ERROR LOAD LATEST VERSION";
+    }
+}
