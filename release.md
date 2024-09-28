@@ -1,3 +1,11 @@
+# 0.6.1
+
+Release date: 2024.09.29
+
+Minor UI update:
+1. Add "Server Version" section in "Server Status" tab.
+2. Add "LOGOUT" button.
+
 # 0.6.0
 
 Release date: 2024.08.24
