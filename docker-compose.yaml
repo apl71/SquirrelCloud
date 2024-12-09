@@ -1,0 +1,10 @@
+services:
+  db:
+    image: postgres:13.18-bookworm
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=squirrelcloud
+      - POSTGRES_USER=squirrelcloud
+      - POSTGRES_DB=squirrelcloud
