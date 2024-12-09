@@ -1,3 +1,5 @@
+Before Release, check `app.config["VERSION"]` in `app.py` and finish this doc.
+
 # 0.6.1
 
 Release date: 2024.09.29
