@@ -43,3 +43,13 @@ async function get_latest_version() {
         return "ERROR LOAD LATEST VERSION";
     }
 }
+
+function get_parent_directory(path) {
+    if (path && path !== '/') {
+        path = path.replace(/\/$/, '');
+        const lastSlashIndex = path.lastIndexOf('/');
+        const parentDirectory = path.substring(0, lastSlashIndex);
+        return parentDirectory === '' ? '/' : parentDirectory;
+    }
+    return null;
+}
