@@ -25,7 +25,7 @@ def create_app():
     )
 
     ## setting version
-    app.config["VERSION"] = "0.6.1"
+    app.config["VERSION"] = "0.7.0"
 
     ## register api for app
     from route.auth_api import auth_api
