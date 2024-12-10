@@ -1,7 +1,6 @@
 async function load_preview() {
     const vpath = new URLSearchParams(new URL(window.location.href).search).get("path");
     const extension = vpath.split('.').pop();
-    const preview_section = document.getElementById("preview");
     // get file
     const response = await fetch("/api/download?file=" + encodeURIComponent(vpath));
     const type = response.headers.get("Content-Type");
@@ -25,9 +24,10 @@ async function load_preview() {
         vid.src = vidURL;
         vid.style.display = "block";
     } else if (isTextFile(type) || isTextExtension(extension)) {
+        const cnter = document.getElementById("text_preview_container");
+        cnter.style.display = "flex";
         txt = document.getElementById("text_preview");
         txt.innerHTML = (await response.text());
-        txt.style.display = "block";
     } else {
         alert("No preview for this kind of file. Type: " + type);
         window.close();
@@ -66,4 +66,29 @@ function isVideoExtension(ext) {
     ];
 
     return imgexts.includes(ext);
+}
+
+async function save_text() {
+    const vpath = new URLSearchParams(new URL(window.location.href).search).get("path");
+    const filename = Date.now().toString() + "_" + vpath.split('/').pop();
+    const base_path = get_parent_directory(vpath);
+    // dup of file.js: upload_file()
+    // TODO: refactor
+    const form_data = new FormData();
+    form_data.append("path", base_path);
+    const text_blob = new Blob([document.getElementById("text_preview").value], { type: "text/plain" });
+    form_data.append("file", text_blob, filename);
+    if (getCookie("replica") == "true") {
+        form_data.append("replica", true);
+    }
+    const response = await fetch("/api/upload", {
+        method: "POST",
+        body: form_data
+    });
+    const res = await response.json();
+    if (res["result"] == "OK") {
+        alert("Saved.");
+    } else {
+        alert("Fail to upload file: " + res["message"]);
+    }
 }

@@ -5,6 +5,21 @@
     display: none;
 }
 
+#text_preview_container {
+    height: 100%;
+    width: 100%;
+    flex-direction: column;
+}
+
+#text_preview {
+    flex: 19;
+    box-sizing: border-box;
+}
+
+#save_button {
+    flex: 1;
+}
+
 #pdf_preview, #vid_preview {
     height: 100%;
     width: 100%;

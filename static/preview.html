@@ -5,6 +5,7 @@
     <title>Squirrel Cloud - Preview</title>
     <link rel="stylesheet" href="css/preview.css">
     <script src="js/preview.js"></script>
+    <script src="js/utils.js"></script>
 </head>
 
 <html>
@@ -16,7 +17,10 @@
     <embed id="pdf_preview" >
 
     <!-- for TEXT preview -->
-    <pre id="text_preview" class="nonpdf_preview"></pre>
+    <section id="text_preview_container" class="nonpdf_preview">
+        <textarea id="text_preview" class="text_preview"></textarea>
+        <button id="save_button" onclick="save_text()">Save</button>
+    </section>
 
     <!-- for IMAGE preview -->
     <img id="image_preview" class="nonpdf_preview">
