@@ -3,6 +3,12 @@ function to_page(page) {
 }
 
 async function load_app() {
+    if (getCookie("admin") == "false") {
+        const admin_panel = document.getElementsByClassName("admin_panel");
+        for (let i = 0; i < admin_panel.length; i++) {
+            admin_panel[i].style.display = "none";
+        }
+    }
     // check login status
     await fetch("/api/session_status", {
         method: "GET",

@@ -20,6 +20,12 @@ async function register() {
 }
 
 async function load_settings() {
+    if (getCookie("admin") == "false") {
+        const admin_panel = document.getElementsByClassName("admin_panel");
+        for (let i = 0; i < admin_panel.length; i++) {
+            admin_panel[i].style.display = "none";
+        }
+    }
     // load tags
     load_tags();
     // load replica setting
@@ -106,26 +112,4 @@ function load_replica_setting() {
     // on the load of page, load the setting from cookie
     value = (getCookie("replica") == "true");
     document.getElementById("replica_checkbox").checked = value;
-}
-
-async function check_update() {
-    let latest = "";
-    const response = await fetch("/api/check_update", {
-        method: "GET"
-    });
-    const res = await response.json();
-    if (res["result"] == "OK") {
-        latest = res["message"];
-    }
-    if (latest == "") {
-        alert("Fail to check update.");
-        return;
-    }
-    // get current version
-    current = await get_version();
-    if (current == latest) {
-        alert("There is no update. Latest version: " + latest);
-    } else {
-        alert("New version: " + latest + ", current: " + current);
-    }
 }
