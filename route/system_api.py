@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, request, jsonify
+from flask import Blueprint, current_app, request, jsonify, redirect, url_for
 from app import conn
 from db import auth
 import shutil
@@ -7,6 +7,10 @@ import requests, os
 import toml
 
 system_api = Blueprint("system_api", __name__)
+
+@system_api.route("/", methods=["GET"])
+def index():
+    return redirect(url_for("static", filename="app.html"))
 
 @system_api.route("/api/version", methods=["GET"])
 def version():
