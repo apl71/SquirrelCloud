@@ -5,6 +5,8 @@ Before Release, check `app.config["VERSION"]` in `app.py` and finish this doc.
 Release date: 202x.xx.xx
 
 1. Text file can be edited when previewed.
+2. Now "/" will be redirected to "app.html" other than showing a 404 page.
+3. Hiding admin-function from non-admin users.
 
 # 0.6.1
 
