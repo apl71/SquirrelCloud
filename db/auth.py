@@ -122,6 +122,8 @@ def check_user_exist(conn, username: str) -> str:
 ## check if an user is admin or not
 ## if a uuid does not exist, return false
 def check_admin_user(conn, user_uuid: str) -> bool:
+    if user_uuid == None:
+        return False
     sql = "SELECT role FROM AppUser WHERE uuid = %s"
     cursor = conn.cursor()
     cursor.execute(sql, (user_uuid,))

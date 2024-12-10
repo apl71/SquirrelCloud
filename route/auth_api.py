@@ -12,6 +12,7 @@ def login():
     password = request_data["password"]
     ## check password in database
     uuid, session = auth.check_user_login(conn, username, password)
+    admin = auth.check_admin_user(conn, uuid)
     success = True if uuid else False
     result = {
         "result": "OK" if success else "FAIL"
@@ -19,6 +20,8 @@ def login():
     response = current_app.make_response(jsonify(result))
     if success:
         response.set_cookie("session", value=session, httponly=True, secure=True)
+        response.set_cookie("username", value=username, httponly=False, secure=True)
+        response.set_cookie("admin", value="true" if admin else "false", httponly=False, secure=True)
     return response
 
 @auth_api.route("/api/logout", methods=["DELETE"])
