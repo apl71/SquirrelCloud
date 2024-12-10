@@ -1,13 +1,16 @@
-## pytest -s test.py
+## run pytest from the root directory
 
-import pytest
+import pytest, sys, os
+
+# 将父目录路径添加到 sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from app import create_app
 import psycopg2
-
 import warnings
 
 def get_connection():
-    dsn = "postgresql://squirrelcloud:squirrelcloud@db:5432/squirrelcloud"
+    dsn = "postgresql://squirrelcloud:squirrelcloud@localhost:5432/squirrelcloud"
     conn = psycopg2.connect(dsn)
     return conn
 
