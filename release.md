@@ -1,5 +1,11 @@
 Before Release, check `app.config["VERSION"]` in `app.py` and finish this doc.
 
+# 0.7.0
+
+Release date: 202x.xx.xx
+
+1. Text file can be edited when previewed.
+
 # 0.6.1
 
 Release date: 2024.09.29
