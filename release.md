@@ -7,6 +7,7 @@ Release date: 202x.xx.xx
 1. New feature: Text file can be edited when previewed.
 2. UI update: Now "/" will be redirected to "app.html" other than showing a 404 page.
 3. UI update: Hiding admin-function from non-admin users.
+4. New feature: Replicas can be found and removed in new "function" tab.
 
 # 0.6.1
 
