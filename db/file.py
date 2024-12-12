@@ -329,3 +329,19 @@ def query_external_link(conn, key: str) -> tuple[str, str]:
         return None
     else:
         return (result[0][0], result[0][1])
+
+## find all replicas
+def find_replicas(conn, user_uuid: str) -> list:
+    sql = "SELECT ARRAY_AGG(path), hash, size FROM File WHERE owner_uuid = %s AND type = 'TYPE_FILE' GROUP BY hash, size HAVING COUNT(*) > 1"
+    cursor = conn.cursor()
+    cursor.execute(sql, (user_uuid, ))
+    result = cursor.fetchall()
+    print(result)
+    result_list = []
+    for info in result:
+        result_list.append({
+            "paths": info[0],
+            "hash":  info[1],
+            "size":  info[2]
+        })
+    return result_list

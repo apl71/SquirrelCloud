@@ -508,3 +508,21 @@ def replica():
     else:
         result["exist"] = False
     return jsonify(result)
+
+@file_api.route("/api/replica_list", methods=["GET"])
+def replica_list():
+    result = {
+        "result": "FAIL",
+        "message": "",
+        "files": []
+    }
+    ## get and check session
+    session = request.cookies.get("session")
+    user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
+    if not user_uuid:
+        result["message"] = "Your session is not valid."
+        return jsonify(result)
+    result["files"] = file.find_replicas(conn, user_uuid)
+    result["result"] = "OK"
+    result["message"] = "Success."
+    return jsonify(result)
