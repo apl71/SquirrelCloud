@@ -336,7 +336,6 @@ def find_replicas(conn, user_uuid: str) -> list:
     cursor = conn.cursor()
     cursor.execute(sql, (user_uuid, ))
     result = cursor.fetchall()
-    print(result)
     result_list = []
     for info in result:
         result_list.append({
