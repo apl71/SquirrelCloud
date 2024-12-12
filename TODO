@@ -33,3 +33,8 @@
 [ ] 个人磁盘用量查看
 [ ] 管理员磁盘用量管理
 [ ] 用icon替代emoji按钮
+[ ] Seeking hanging file.
+[x] Seeking replicas.
+[ ] 找重复文件：从大到小排序
+[x] replicas table的颜色和行格式
+[x] replicas table可以直接删除文件
