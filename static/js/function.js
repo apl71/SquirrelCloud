@@ -37,6 +37,7 @@ function find_replicas() {
         const tbody = document.createElement("tbody");
         table.insertBefore(tbody, table.firstChild);
         const replicas = result["files"];
+        replicas.sort((a, b) => b["size"] - a["size"]);
         replicas.forEach(replica => {
             const path_len = replica["paths"].length;
             replica["paths"].forEach((path, index) => {
@@ -60,7 +61,7 @@ function find_replicas() {
                     hash_cell.title = replica["hash"];
                     hash_cell.className = "center_cell";
                     const size_cell = row.insertCell(3);
-                    size_cell.innerHTML = user_friendly_size(replica["size"]);
+                    size_cell.innerHTML = user_friendly_size(parseInt(replica["size"]));
                     size_cell.rowSpan = path_len;
                     size_cell.className = "center_cell";
                 }
