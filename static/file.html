@@ -10,7 +10,21 @@
 </head>
 
 <html>
-<body onload="load_files()">
+<body onload="load()">
+    <!-- right click menu -->
+    <div class="context_menu" id="right_click_menu">
+        <ul>
+            <li id="menu_download">Download</li>
+            <li id="menu_preview">Preview</li>
+            <li id="menu_rename">Rename</li>
+            <li id="menu_move">Move</li>
+            <li id="menu_delete">Delete</li>
+            <li id="menu_pin">Pin</li>
+            <li id="menu_unpin">Unpin</li>
+            <li id="menu_share">Share</li>
+        </ul>
+    </div>
+    
     <main>
         <!-- Section of files -->
         <section id="nav_section">
@@ -42,9 +56,9 @@
                     <th>Tags</th>
                     <th>Remark</th>
                     <th>Time Created</th>
-                    <th>Delete</th>
+                    <!-- <th>Delete</th> -->
                     <th>Pin</th>
-                    <th>Share</th>
+                    <!-- <th>Share</th> -->
                 </tr>
             </table>
         </section>

@@ -34,3 +34,16 @@ footer {
 .tag_li, .tag {
     background-color: #eedfc6;
 }
+
+/*
+    right click menu in file.html
+*/
+.context_menu {
+    background-color: antiquewhite;
+    border: 1px solid #aaaaaa;
+    border-radius: 10px;
+}
+
+.context_menu li:hover {
+    background-color: antiquewhite;
+}

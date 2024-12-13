@@ -118,3 +118,30 @@ td {
     gap: 10px;
     padding-bottom: 7px;
 }
+
+/*
+    right-click menu
+*/
+.context_menu {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+}
+
+.context_menu ul {
+    list-style-type: none;
+    padding: 5px;
+    margin: 0;
+}
+
+.context_menu li {
+    margin: 0;
+    padding: 5px;
+}
+
+.context_menu li:hover {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}

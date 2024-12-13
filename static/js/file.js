@@ -1,3 +1,62 @@
+async function load() {
+    load_files();
+    set_right_click_menu();
+}
+
+function set_right_click_menu() {
+    const file_table = document.getElementById("file_table");
+    const menu = document.getElementById("right_click_menu");
+    let selected_file_path = null;
+    // add right click event listener to the table
+    file_table.addEventListener("contextmenu", (event) => {
+        if (event.target.className == "filename") {
+            event.preventDefault();
+            selected_file_path = event.target.dataset.path;
+            menu.style.left = event.clientX + "px";
+            menu.style.top = event.clientY + "px";
+            menu.style.display = "block";
+        }
+    });
+
+    document.addEventListener("click", () => {
+        menu.style.display = "none";
+    });
+
+    // add event listener to the menu items
+    document.getElementById("menu_download").addEventListener("click", () => {
+        menu.style.display = "none";
+        download_file(selected_file_path);
+    });
+    document.getElementById("menu_rename").addEventListener("click", () => {
+        menu.style.display = "none";
+        rename(selected_file_path);
+    });
+    document.getElementById("menu_move").addEventListener("click", () => {
+        menu.style.display = "none";
+        move(selected_file_path);
+    });
+    document.getElementById("menu_delete").addEventListener("click", () => {
+        menu.style.display = "none";
+        delete_file_or_directory(selected_file_path);
+    });
+    document.getElementById("menu_pin").addEventListener("click", () => {
+        menu.style.display = "none";
+        pin_file(selected_file_path, true);
+    });
+    document.getElementById("menu_unpin").addEventListener("click", () => {
+        menu.style.display = "none";
+        pin_file(selected_file_path, false);
+    });
+    document.getElementById("menu_preview").addEventListener("click", () => {
+        menu.style.display = "none";
+        open_preview(selected_file_path);
+    });
+    document.getElementById("menu_share").addEventListener("click", () => {
+        menu.style.display = "none";
+        create_external_link(selected_file_path);
+    });
+}
+
 async function load_files() {
     const path = document.getElementById("current_path").value;
     // check if the path exists
@@ -70,20 +129,22 @@ async function load_file_table(data) {
         let filename_td = document.createElement("td");
         const full_path = element["path"];
         let filename = document.createElement("label");
+        // save full path for later use
+        filename.dataset.path = full_path;
         filename.innerText = full_path.substring(full_path.lastIndexOf("/") + 1);
         filename.className = "filename";
-        let rename_button = document.createElement("button");
-        rename_button.innerText = "✍️";
-        rename_button.onclick = function() {
-            rename(full_path);
-        }
-        let move_button = document.createElement("button");
-        move_button.innerText = "➡️";
-        move_button.onclick = function() {
-            move(full_path);
-        }
-        filename_td.appendChild(rename_button);
-        filename_td.appendChild(move_button);
+        // let rename_button = document.createElement("button");
+        // rename_button.innerText = "✍️";
+        // rename_button.onclick = function() {
+        //     rename(full_path);
+        // }
+        // let move_button = document.createElement("button");
+        // move_button.innerText = "➡️";
+        // move_button.onclick = function() {
+        //     move(full_path);
+        // }
+        // filename_td.appendChild(rename_button);
+        // filename_td.appendChild(move_button);
         filename_td.appendChild(filename);
         // ------------------------------------ file size ------------------------------------
         let size = document.createElement("td");
@@ -133,11 +194,11 @@ async function load_file_table(data) {
         created.className = "create_time";
         created.innerText = convertDateFormat(element["create_at"]);
         // ------------------------------------ delete ------------------------------------
-        let delete_td = document.createElement("td");
-        let delete_button = document.createElement("button");
-        delete_td.className = "delete_td";
-        delete_button.innerText = "❌";
-        delete_td.appendChild(delete_button);
+        // let delete_td = document.createElement("td");
+        // let delete_button = document.createElement("button");
+        // delete_td.className = "delete_td";
+        // delete_button.innerText = "❌";
+        // delete_td.appendChild(delete_button);
         // ------------------------------------ pinned ------------------------------------
         let pin_td = document.createElement("td");
         pin_td.className = "pin_td";
@@ -155,14 +216,14 @@ async function load_file_table(data) {
         }
         pin_td.appendChild(pin_button);
         // ------------------------------------ share ------------------------------------
-        let share_td = document.createElement("td");
-        share_td.className = "share_td";
-        let share_button = document.createElement("button");
-        share_button.innerText = "Share";
-        share_button.onclick = function() {
-            create_external_link(full_path);
-        }
-        share_td.appendChild(share_button);
+        // let share_td = document.createElement("td");
+        // share_td.className = "share_td";
+        // let share_button = document.createElement("button");
+        // share_button.innerText = "Share";
+        // share_button.onclick = function() {
+        //     create_external_link(full_path);
+        // }
+        // share_td.appendChild(share_button);
 
         row.appendChild(icon_td);
         row.appendChild(filename_td);
@@ -170,9 +231,9 @@ async function load_file_table(data) {
         row.appendChild(tags_td);
         row.appendChild(remark);
         row.appendChild(created);
-        row.appendChild(delete_td);
+        //row.appendChild(delete_td);
         row.appendChild(pin_td);
-        row.appendChild(share_td);
+        //row.appendChild(share_td);
         table.appendChild(row);
         if (element["type"] == "TYPE_FILE") {
             filename_td.ondblclick = function() {
@@ -189,9 +250,9 @@ async function load_file_table(data) {
             };
             icon.src = "/img/dir.ico";
         }
-        delete_button.onclick = function() {
-            delete_file_or_directory(full_path);
-        }
+        // delete_button.onclick = function() {
+        //     delete_file_or_directory(full_path);
+        // }
     });
 }
 
