@@ -8,6 +8,7 @@ Release date: 202x.xx.xx
 2. UI update: Now "/" will be redirected to "app.html" other than showing a 404 page.
 3. UI update: Hiding admin-function from non-admin users.
 4. New feature: Replicas can be found and removed in new "function" tab.
+5. UI update: Simplify the file table by moving some functions(moving file, renaming file, removing file and creating external link) to a right-click menu.
 
 # 0.6.1
 
