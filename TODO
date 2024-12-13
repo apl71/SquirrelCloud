@@ -1,7 +1,29 @@
 [ ] Regulate path before inserting it into database.
 [ ] Customer 404 Page.
-[x] Version api.
 [ ] Disk management.
+[ ] 新增接口及UI 管理员查询及管理所有用户
+[ ] 支持多个主存储目录
+[ ] Is it right to query disk space in a docker containner?
+[ ] UI可以选择分享外链的过期时间
+[ ] zip形式下载文件夹
+[ ] 自动从本地文件夹中导入文件
+[ ] 多人共享目录
+[ ] HTTP下载任务
+[ ] 按标签搜索
+[ ] 隐私目录，仅搜索可见
+[ ] 手动上传更新
+[ ] 更新服务器部署教程
+[ ] app部署教程
+[ ] 预览文本只能保存到新文件，有点不方便
+[ ] 个人磁盘用量查看
+[ ] 管理员磁盘用量管理
+[ ] 用icon替代emoji按钮
+[ ] Seeking hanging file.
+[ ] 现有的分享外链列表
+[ ] 将颜色、样式等与主题有关的CSS移动到xxx-theme.css中
+[ ] 为不同类型的文件创建图标
+
+[x] Version api.
 [x] Upload limitation. (Seems no limitation by default)
 [x] External link(file sharing with non-sc user).
 [x] Tag.
@@ -11,29 +33,11 @@
 [x] Web新增返回上一级按钮及返回主页按钮
 [x] 新增接口：检测目录或文件是否存在
 [x] 新增接口及UI 查询主存储目录的总容量及空闲容量
-[ ] 新增接口及UI 管理员查询及管理所有用户
-[ ] 支持多个主存储目录
-[ ] Is it right to query disk space in a docker containner?
-[ ] UI可以选择分享外链的过期时间
 [x] Bug: Testing服务器无法分享外链 服务器报错500
-[ ] zip形式下载文件夹
-[ ] 自动从本地文件夹中导入文件
-[ ] 多人共享目录
-[ ] HTTP下载任务
 [x] Bug: 部分文件下载显示文件不存在，但主目录中确实包含该文件
 [x] Bug: 主目录中包含很多不应该存在的、以uuid命名的文件
-[ ] 按标签搜索
-[ ] 隐私目录，仅搜索可见
 [x] 根目录自动路由到app.html
-[ ] 手动上传更新
-[ ] 更新服务器部署教程
-[ ] app部署教程
 [x] 预览文本文件时可以编辑
-[ ] 预览文本只能保存到新文件，有点不方便
-[ ] 个人磁盘用量查看
-[ ] 管理员磁盘用量管理
-[ ] 用icon替代emoji按钮
-[ ] Seeking hanging file.
 [x] Seeking replicas.
 [x] 找重复文件：从大到小排序
 [x] replicas table的颜色和行格式
