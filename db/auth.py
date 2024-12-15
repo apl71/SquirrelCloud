@@ -151,3 +151,11 @@ def create_user(conn, username: str, password: str, admin: bool, email: str) -> 
         return None
     cursor.close()
     return get_uuid_by_username(conn, username)
+
+def get_all_users(conn) -> list[dict]:
+    sql = "SELECT uuid, username, email, role, create_at FROM AppUser"
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    cursor.close()
+    return [{"uuid": r[0], "username": r[1], "email": r[2], "role": r[3], "create_at": r[4]} for r in result]

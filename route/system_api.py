@@ -118,3 +118,26 @@ def disk_usage():
     ## return
     result["result"] = "OK"
     return jsonify(result)
+
+## get all users, only for admin
+@system_api.route("/api/all_users", methods=["GET"])
+def all_users():
+    result = {
+        "result": "FAIL",
+        "message": "Success.",
+        "users": []
+    }
+    ## get and check session
+    session = request.cookies.get("session")
+    user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
+    if not user_uuid:
+        result["message"] = "Your session is not valid."
+        return jsonify(result)
+    if not auth.check_admin_user(conn, user_uuid):
+        result["message"] = "You are not administrator."
+        return jsonify(result)
+    ## get all users
+    result["users"] = auth.get_all_users(conn)
+    ## return
+    result["result"] = "OK"
+    return jsonify(result)
