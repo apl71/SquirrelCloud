@@ -1,7 +1,6 @@
 [ ] Regulate path before inserting it into database.
 [ ] Customer 404 Page.
 [ ] Disk management.
-[ ] 新增接口及UI 管理员查询及管理所有用户
 [ ] 支持多个主存储目录
 [ ] Is it right to query disk space in a docker containner?
 [ ] UI可以选择分享外链的过期时间
@@ -22,6 +21,9 @@
 [ ] 现有的分享外链列表
 [ ] 将颜色、样式等与主题有关的CSS移动到xxx-theme.css中
 [ ] 为不同类型的文件创建图标
+[ ] 用户可在Account tab里面更新个人信息
+[ ] 创建更多主题
+[ ] 主页上可更改主题
 
 [x] Version api.
 [x] Upload limitation. (Seems no limitation by default)
@@ -42,3 +44,4 @@
 [x] 找重复文件：从大到小排序
 [x] replicas table的颜色和行格式
 [x] replicas table可以直接删除文件
+[x] 新增接口及UI 管理员查询及管理所有用户
