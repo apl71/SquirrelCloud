@@ -26,7 +26,7 @@ main {
     display: none;
 }
 
-#replica_table {
+/* #replica_table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 2;
@@ -48,4 +48,4 @@ th {
 
 td {
     background-color: #e5e5e5;
-}
+} */

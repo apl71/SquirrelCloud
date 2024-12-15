@@ -47,3 +47,32 @@ footer {
 .context_menu li:hover {
     background-color: antiquewhite;
 }
+
+/*
+    for information table
+    such as replica table in function.html
+    and     user table in server_status.html
+*/
+.common_table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 2;
+    margin-top: 10px;
+}
+
+.common_table td, .common_table th {
+    border-radius: 10px;
+    padding: 7px;
+}
+
+.common_table .center_cell {
+    text-align: center;
+}
+
+.common_table th {
+    background-color: #d8d8d8;
+}
+
+.common_table td {
+    background-color: #e5e5e5;
+}
