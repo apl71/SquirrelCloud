@@ -1,0 +1,78 @@
+/*
+    for app.html
+*/
+body {
+    color: #e0e0e0;
+}
+
+header {
+    background-color: #232323;
+}
+
+nav {
+    background-color: #333333;
+}
+
+.navigate_link:hover {
+    background-color: #232323;
+    cursor: pointer;
+}
+
+iframe {
+    background-color: #c0c0c0;
+}
+
+footer {
+    background-color: #232323;
+}
+
+.setting_section {
+    background-color: #909090;
+    border-radius: 10px;
+}
+
+.tag_li, .tag {
+    background-color: #1e1e1e;
+}
+
+/*
+    right click menu in file.html
+*/
+.context_menu {
+    background-color: #909090;
+    border: 1px solid #121212;
+    border-radius: 10px;
+}
+
+.context_menu li:hover {
+    background-color: #909090;
+}
+
+/*
+    for information table
+    such as replica table in function.html
+    and     user table in server_status.html
+*/
+.common_table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 2;
+    margin-top: 10px;
+}
+
+.common_table td, .common_table th {
+    border-radius: 10px;
+    padding: 7px;
+}
+
+.common_table .center_cell {
+    text-align: center;
+}
+
+.common_table th {
+    background-color: #808080;
+}
+
+.common_table td {
+    background-color: #878787;
+}
