@@ -141,3 +141,11 @@ def all_users():
     ## return
     result["result"] = "OK"
     return jsonify(result)
+
+@system_api.route("/api/get_theme", methods=["GET"])
+def get_theme():
+    result = {
+        "result": "OK",
+        "theme": [file for file in os.listdir("{}/static/css".format(current_app.config["CODE_PATH"])) if file.endswith("-theme.css")]
+    }
+    return jsonify(result)
