@@ -22,8 +22,9 @@
 [ ] 将颜色、样式等与主题有关的CSS移动到xxx-theme.css中
 [ ] 为不同类型的文件创建图标
 [ ] 用户可在Account tab里面更新个人信息
-[ ] 创建更多主题
-[ ] 主页上可更改主题
+[x] 创建更多主题
+[x] 主页上可更改主题
+[ ] 管理员可在web上修改及更新update server
 
 [x] Version api.
 [x] Upload limitation. (Seems no limitation by default)
