@@ -2,6 +2,7 @@ function initialize_server_status() {
     load_disk_usage();
     load_server_version();
     load_users();
+    load_theme();
 }
 
 function load_disk_usage() {

@@ -1,6 +1,7 @@
 async function load() {
     load_files();
     set_right_click_menu();
+    load_theme();
 }
 
 function set_right_click_menu() {
@@ -117,7 +118,6 @@ async function load_file_table(data) {
     });
     // create a select view for tag
     var tag_list = await get_tag_list();
-    console.log(tag_list);
     data["files"].forEach(element => {
         let row = document.createElement("tr");
         // ------------------------------------ icon ------------------------------------

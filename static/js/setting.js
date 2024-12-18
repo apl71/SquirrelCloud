@@ -20,6 +20,8 @@ async function register() {
 }
 
 async function load_settings() {
+    load_theme();
+    // hide admin panel
     if (getCookie("admin") == "false") {
         const admin_panel = document.getElementsByClassName("admin_panel");
         for (let i = 0; i < admin_panel.length; i++) {

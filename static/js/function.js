@@ -1,3 +1,7 @@
+function load_function() {
+    load_theme();
+}
+
 function find_replicas() {
     // remove table
     document.getElementById("replica_table").innerHTML = "";

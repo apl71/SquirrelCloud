@@ -3,6 +3,11 @@ function to_page(page) {
 }
 
 async function load_app() {
+    // load locally saved theme
+    load_theme();
+    // get all theme from remote and initialize theme select
+    get_themes();
+    // hide admin panel
     if (getCookie("admin") == "false") {
         const admin_panel = document.getElementsByClassName("admin_panel");
         for (let i = 0; i < admin_panel.length; i++) {

@@ -1,3 +1,7 @@
+function load_account() {
+    load_theme();
+}
+
 async function reset_password() {
     const reset_password_form = document.getElementById("reset_password_form");
     const form_data = new FormData(reset_password_form);
