@@ -67,7 +67,7 @@ def update_system():
     if latest == None:
         result["message"] = "Fail to fetch new version number."
         return jsonify(result)
-    http_path = "http://{}/download/squirrelcloud-{}.zip".format(current_app.config["UPDATE_SERVER"], latest)
+    http_path = "{}/download/squirrelcloud-{}.zip".format(current_app.config["UPDATE_SERVER"], latest)
     new_source_zip = requests.get(http_path)
     if new_source_zip.status_code != 200:
         result["message"] = "Fail to fetch new source."
