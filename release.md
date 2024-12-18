@@ -10,6 +10,7 @@ Release date: 202x.xx.xx
 4. New feature: Replicas can be found and removed in new "function" tab.
 5. UI update: Simplify the file table by moving some functions(moving file, renaming file, removing file and creating external link) to a right-click menu.
 6. New feature: Administrators can peek all users' information.
+7. UI update: New dark theme is available and theme can be switched on webpage.
 
 # 0.6.1
 
