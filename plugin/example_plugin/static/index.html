@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="author" content="apl71" />
+        <title>Squirrel Cloud - example plugin</title>
+        <script src="example.js"></script>
+        <script src="/js/utils.js"></script>
+        <link rel="stylesheet" class="theme" href="/css/nut-theme.css">
+        <link rel="stylesheet" href="example.css">
+    </head>
+
+    <body onload="initialize_page()">
+        <h2>Hello, welcome to example plugin.</h2>
+        <p>This is a simple example plugin for Squirrel Cloud which provide a fantasique gallery.</p>
+        <p>Meta data:</p>
+        <!-- refer to table style from /css/nut-theme.css -->
+        <table class="common_table">
+            <tr>
+                <th>Key</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>Plugin Name</td>
+                <td id="plugin_name">Loading...</td>
+            </tr>
+            <tr>
+                <td>Author</td>
+                <td id="plugin_author">Loading...</td>
+            </tr>
+            <tr>
+                <td>Description</td>
+                <td id="plugin_desc">Loading...</td>
+            </tr>
+            <tr>
+                <td>Version</td>
+                <td id="plugin_version">Loading...</td>
+            </tr>
+        </table>
+
+        <!-- Gallery -->
+        <div id="gallery" class="gallery"></div>
+          
+    </body>
+</html>
