@@ -1,0 +1,33 @@
+body, main, html {
+    height: 100%;
+    margin: 0;
+}
+
+main {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    box-sizing: border-box;
+}
+
+#plugin_list {
+    flex: 1;
+    height: 95%;
+    margin: 5px;
+}
+
+#plugin_list_ul {
+    margin: 0;
+    padding: 0;
+}
+
+#plugin_list li {
+    list-style-type: none;
+    padding: 10px;
+}
+
+#plugin_frame {
+    flex: 9;
+    height: 95%;
+    margin: 5px;
+}
