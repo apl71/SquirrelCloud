@@ -1,8 +1,14 @@
 Before Release, check `app.config["VERSION"]` in `app.py` and finish this doc.
 
-# 0.7.0
+# 0.8.0
 
 Release date: 202x.xx.xx
+
+1. New feature: Now the app is modulable and an example plugin is provided.
+
+# 0.7.0
+
+Release date: 2024.12.18
 
 1. New feature: Text file can be edited when previewed.
 2. UI update: Now "/" will be redirected to "app.html" other than showing a 404 page.
