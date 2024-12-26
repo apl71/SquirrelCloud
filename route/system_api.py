@@ -149,3 +149,18 @@ def get_theme():
         "theme": [file for file in os.listdir("{}/static/css".format(current_app.config["CODE_PATH"])) if file.endswith("-theme.css")]
     }
     return jsonify(result)
+
+@system_api.route("/api/get_plugins", methods=["GET"])
+def get_plugins():
+    result = {}
+    ## get and check session
+    session = request.cookies.get("session")
+    user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
+    if not user_uuid:
+        result["plugins"] = None
+        result["result"] = "FAIL"
+        result["message"] = "Your session is not valid."
+    else:
+        result["plugins"] = current_app.plugin_list
+        result["result"] = "OK"
+    return jsonify(result)
