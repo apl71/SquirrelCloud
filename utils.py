@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from flask import current_app
 import requests, re
+import subprocess, sys
 
 def hash_file(path: str) -> str:
     f = open(path, "rb")
@@ -50,3 +51,16 @@ def check_update() -> str:
         return latest
     else:
         return None
+
+def install_requirements(requirements_file: str) -> list[bool, str]:
+    if not os.path.isfile(requirements_file):
+        return False, "Requirements file not found."
+    ## install requirements
+    try:
+        result = subprocess.run([sys.executable, "-m", "pip", "install", "-r", requirements_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if result.returncode == 0:
+            return True, None
+        else:
+            return False, result.stderr
+    except Exception as e:
+        return False, str(e)
