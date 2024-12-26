@@ -22,9 +22,11 @@
 [ ] 将颜色、样式等与主题有关的CSS移动到xxx-theme.css中
 [ ] 为不同类型的文件创建图标
 [ ] 用户可在Account tab里面更新个人信息
-[x] 创建更多主题
-[x] 主页上可更改主题
 [ ] 管理员可在web上修改及更新update server
+[ ] 增加一个查询目录大小的接口
+[ ] 实现一个python客户端库
+[ ] 在客户端库的基础上实现客户端
+[ ] 管理员插件管理：安装、移除、更新等
 
 [x] Version api.
 [x] Upload limitation. (Seems no limitation by default)
@@ -46,3 +48,5 @@
 [x] replicas table的颜色和行格式
 [x] replicas table可以直接删除文件
 [x] 新增接口及UI 管理员查询及管理所有用户
+[x] 创建更多主题
+[x] 主页上可更改主题
