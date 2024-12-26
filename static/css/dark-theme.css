@@ -54,7 +54,6 @@ footer {
     and     user table in server_status.html
 */
 .common_table {
-    width: 100%;
     border-collapse: separate;
     border-spacing: 2;
     margin-top: 10px;
@@ -75,4 +74,21 @@ footer {
 
 .common_table td {
     background-color: #878787;
+}
+
+/* plugin page */
+#plugin_list {
+    border: #555555 1px solid;
+    list-style: none;
+    background-color: #909090;
+}
+
+#plugin_list li:hover {
+    background-color: #232323;
+    cursor: pointer;
+}
+
+#plugin_frame {
+    border: #555555 1px solid;
+    background-color: #909090;
 }
