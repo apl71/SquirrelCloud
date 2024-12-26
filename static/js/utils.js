@@ -58,7 +58,7 @@ function load_theme() {
     const saved_theme = localStorage.getItem("theme") || "nut";
     const themes = document.getElementsByClassName("theme");
     for (let i = 0; i < themes.length; i++) {
-        themes[i].href = `css/${saved_theme}-theme.css`;
+        themes[i].href = `/css/${saved_theme}-theme.css`;
     }
 }
 
