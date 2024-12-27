@@ -2,6 +2,7 @@ function initialize_server_status() {
     load_disk_usage();
     load_server_version();
     load_users();
+    load_plugins();
     load_theme();
 }
 
@@ -113,4 +114,62 @@ function load_users() {
             created_at_cell.className = "center_cell";
         });
     })
+}
+
+function load_plugins() {
+    fetch("/api/get_remote_plugins", {
+        method: "GET"
+    }).then(response => {
+        return response.json();
+    }).then(response => {
+        if (response["result"] != "OK") {
+            return;
+        } else {
+            const plugins = response["plugins"];
+            const plugin_table = document.getElementById("plugin_table");
+            plugins.forEach(plugin => {
+                const tr = document.createElement("tr");
+                const td1 = document.createElement("td");
+                td1.innerText = plugin["name"];
+                tr.appendChild(td1);
+                const td2 = document.createElement("td");
+                td2.innerText = plugin["version"];
+                tr.appendChild(td2);
+                const td3 = document.createElement("td");
+                const install_button = document.createElement("button");
+                install_button.innerText = "Install";
+                install_button.onclick = function() {
+                    install_plugin(plugin["name"], plugin["version"]);
+                }
+                td3.appendChild(install_button);
+                tr.appendChild(td3);
+                plugin_table.appendChild(tr);
+            });
+        }
+    });
+}
+
+function install_plugin(name, version) {
+    const params = {
+        "name": name,
+        "version": version,
+        "reinstall": false
+    };
+    const url_params = new URLSearchParams(params);
+    fetch("/api/install_plugin?" + url_params.toString(), {
+        method: "POST",
+        body: JSON.stringify({
+            "name": name,
+            "version": version,
+            "reinstall": false
+        })
+    }).then(response => {
+        return response.json();
+    }).then(response => {
+        if (response["result"] != "OK") {
+            alert("Failed to install plugin.");
+            return;
+        }
+        alert("Plugin installed.");
+    });
 }

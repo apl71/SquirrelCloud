@@ -164,3 +164,78 @@ def get_plugins():
         result["plugins"] = current_app.plugin_list
         result["result"] = "OK"
     return jsonify(result)
+
+## TODO: get logs
+@system_api.route("/api/get_logs", methods=["GET"])
+def get_logs():
+    result = {
+        "result": "OK",
+        "logs": []
+    }
+    return jsonify(result)
+
+@system_api.route("/api/get_remote_plugins", methods=["GET"])
+def get_remote_plugins():
+    result = {
+        "result": "OK",
+        "plugins": []
+    }
+    http_path = "{}/list.html".format(current_app.config["PLUGIN_SERVER"])
+    plugin_list = requests.get(http_path)
+    if plugin_list.status_code != 200:
+        result["result"] = "FAIL"
+        result["message"] = "Fail to fetch plugin list."
+        return jsonify(result)
+    plugin_names = [item for item in plugin_list.text.split("\n") if item.strip() != ""]
+    for plugin_name in plugin_names:
+        http_path = "{}/{}/latest.html".format(current_app.config["PLUGIN_SERVER"], plugin_name)
+        plugin_version = requests.get(http_path)
+        if plugin_version.status_code != 200:
+            continue
+        plugin_version = plugin_version.text.strip()
+        result["plugins"].append({
+            "name": plugin_name,
+            "version": plugin_version
+        })
+    return jsonify(result)
+
+@system_api.route("/api/install_plugin", methods=["POST"])
+def install_plugin():
+    result = {
+        "result": "FAIL",
+        "message": "Success. Restart server to take effect."
+    }
+    ## get and check session
+    session = request.cookies.get("session")
+    user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
+    if not user_uuid:
+        result["message"] = "Your session is not valid."
+        return jsonify(result)
+    if not auth.check_admin_user(conn, user_uuid):
+        result["message"] = "You are not administrator."
+        return jsonify(result)
+    ## get plugin name
+    plugin_name = request.args.get("name")
+    plugin_version = request.args.get("version")
+    reinstall = request.args.get("reinstall")
+    ## check if plugin is already installed
+    if reinstall == "false" and any(plugin["name"] == "{}_plugin".format(plugin_name) and plugin["version"] == plugin_version for plugin in current_app.plugin_list):
+        result["message"] = "Latest plugin is already installed."
+        return jsonify(result)
+    ## formulate url
+    http_path = "{}/{}/{}_plugin-{}.zip".format(current_app.config["PLUGIN_SERVER"], plugin_name, plugin_name, plugin_version)
+    ## fetch plugin
+    plugin_zip = requests.get(http_path)
+    if plugin_zip.status_code != 200:
+        result["message"] = "Fail to fetch plugin."
+        return jsonify(result)
+    else:
+        zip_file = open("temp_plugin.zip", "wb")
+        zip_file.write(plugin_zip.content)
+        zip_file.close()
+    ## unzip plugin
+    os.system('unzip -o temp_plugin.zip -d {}/plugin'.format(current_app.config["CODE_PATH"]))
+    ## remove temp sources
+    os.system('rm temp_plugin.zip')
+    result["result"] = "OK"
+    return jsonify(result)
