@@ -10,7 +10,7 @@ class example_plugin(plugin_base):
             "name": "example_plugin",
             "author": "apl-71",
             "description": "An example plugin. Providing a gallery app for user.",
-            "version": "0.1"
+            "version": "0.1.0"
         }
         super().__init__()
 
