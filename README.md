@@ -38,6 +38,8 @@ SSL = "OFF"
 PORT = "5000"
 ```
 
+If you don't need SSL or want to use another SSL scheme, Remove the part after `--keyfile` in the `CMD` line of `dockerfile`.
+
 `docker build -t squirrelcloud:latest .`
 
 `cd ..`
