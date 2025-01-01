@@ -1,10 +1,25 @@
 services:
   db:
-    image: postgres:13.18-bookworm
+    image: postgres:16.2-bookworm
+    container_name: squirrelcloud-production-database
     restart: always
-    ports:
-      - "5432:5432"
     environment:
-      - POSTGRES_PASSWORD=squirrelcloud
-      - POSTGRES_USER=squirrelcloud
-      - POSTGRES_DB=squirrelcloud
+      POSTGRES_USER: squirrelcloud
+      POSTGRES_PASSWORD: squirrelcloud
+      POSTGRES_DB: squirrelcloud
+    volumes:
+      - ./db:/var/lib/postgresql/data
+
+  backend:
+    image: squirrelcloud:latest
+    container_name: squirrelcloud-production-backend
+    restart: always
+    volumes:
+      - ./file:/file
+      - ./logs:/logs
+      - ./backup:/backup
+      - ./src:/app
+    ports:
+      - "5000:443"
+    depends_on:
+      - db
