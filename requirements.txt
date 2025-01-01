@@ -3,3 +3,4 @@ pytest
 psycopg2-binary
 requests
 toml
+gunicorn
