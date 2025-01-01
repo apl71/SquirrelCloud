@@ -27,6 +27,7 @@
 [ ] 实现一个python客户端库
 [ ] 在客户端库的基础上实现客户端
 [ ] 管理员插件管理：安装、移除、更新等
+[ ] 让移动文件的接口更好用
 
 [x] Version api.
 [x] Upload limitation. (Seems no limitation by default)
