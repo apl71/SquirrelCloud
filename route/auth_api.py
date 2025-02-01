@@ -2,6 +2,7 @@ from flask import Blueprint, current_app, request, jsonify, redirect
 from app import conn
 from db import auth
 from db import file
+import utils
 
 auth_api = Blueprint("auth_api", __name__)
 
@@ -22,6 +23,9 @@ def login():
         response.set_cookie("session", value=session, httponly=True, secure=True)
         response.set_cookie("username", value=username, httponly=False, secure=True)
         response.set_cookie("admin", value="true" if admin else "false", httponly=False, secure=True)
+        utils.log(utils.LEVEL_INFO, "User {} login, is admin: {}.".format(username, admin))
+    else:
+        utils.log(utils.LEVEL_INFO, "User {} login fail.".format(username))
     return response
 
 @auth_api.route("/api/logout", methods=["DELETE"])
@@ -58,6 +62,7 @@ def reset_password():
     ## change password
     if auth.update_password(conn, user_uuid, new_password):
         result["result"] = "OK"
+        utils.log(utils.LEVEL_INFO, "User {} change password.".format(username))
     else:
         result["message"] = "Update fail. Check logs."
     return jsonify(result)
@@ -96,6 +101,7 @@ def register():
         result["message"] = "Fail to create root for new user."
         return jsonify(result)
     result["result"] = "OK"
+    utils.log(utils.LEVEL_INFO, "User {} created by admin.".format(username))
     return jsonify(result)
 
 ## check if session is valid

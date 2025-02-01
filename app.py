@@ -6,7 +6,14 @@ import os, importlib
 
 def create_connection(user, password, host, port, database):
     dsn = "postgresql://{}:{}@{}:{}/{}".format(user, password, host, port, database)
-    conn = db.init.initialize_database(dsn)
+    try:
+        conn = db.init.initialize_database(dsn)
+        utils.log(utils.LEVEL_INFO, "Connect to database successfully.")
+    except Exception as e:
+        print("Fail to connect to database.")
+        print("Reason: {}".format(e))
+        utils.log(utils.LEVEL_CRITICAL, "Fail to connect to database.")
+        return None
     return conn
 
 conn = None
@@ -25,6 +32,8 @@ def load_plugin(app):
         if not result:
             print("Fail to install requirements of plugin: {}".format(plugin_name))
             print("Reason: {}".format(message))
+            with app.app_context():
+                utils.log(utils.LEVEL_WARNING, "Fail to install requirements of plugin: {}".format(plugin_name))
             continue
         if os.path.isdir(plugin_path):
             plugin_module = importlib.import_module("plugin.{}.{}".format(plugin_name, plugin_name))
@@ -35,10 +44,16 @@ def load_plugin(app):
                 plugin_list.append(plugin.info())
                 print("Register plugin: {}".format(plugin_name))
                 loaded_num += 1
+                with app.app_context():
+                    utils.log(utils.LEVEL_INFO, "Register plugin: {}".format(plugin_name))
             else:
                 print("Fail to register plugin: {}".format(plugin_name))
                 print("Reason: {}".format(result["message"]))
+                with app.app_context():
+                    utils.log(utils.LEVEL_WARNING, "Fail to register plugin: {}".format(plugin_name))
     print("Load {} plugin(s).".format(loaded_num))
+    with app.app_context():
+        utils.log(utils.LEVEL_INFO, "Load {} plugin(s).".format(loaded_num))
     app.plugin_list = plugin_list
             
 
@@ -46,21 +61,26 @@ def create_app():
     app = Flask(__name__, static_url_path='', static_folder='static')
     if not app.config.from_file("app.conf", load=tomllib.load, text=False):
         print("Fail to read configuration file.")
+        utils.log(utils.LEVEL_CRITICAL, "Fail to read configuration file.")
+        return None
 
     ## initialize database connection
-    global conn
-    conn = create_connection(
-        app.config["DB_USER"],
-        app.config["DB_PWD"],
-        app.config["DB_HOST"],
-        app.config["DB_PORT"],
-        app.config["DB_NAME"]
-    )
+    with app.app_context():
+        global conn
+        conn = create_connection(
+            app.config["DB_USER"],
+            app.config["DB_PWD"],
+            app.config["DB_HOST"],
+            app.config["DB_PORT"],
+            app.config["DB_NAME"]
+        )
     ## pass connection to app, for plugin to use
     app.conn = conn
 
     ## setting version
     app.config["VERSION"] = "0.8.0"
+    with app.app_context():
+        utils.log(utils.LEVEL_INFO, "Starting Squirrel Cloud Version: {}".format(app.config["VERSION"]))
 
     ## register api for app
     from route.auth_api import auth_api
@@ -71,6 +91,9 @@ def create_app():
 
     from route.system_api import system_api
     app.register_blueprint(system_api)
+
+    with app.app_context():
+        utils.log(utils.LEVEL_INFO, "Register APIs successfully.")
 
     load_plugin(app)
 

@@ -18,7 +18,33 @@ def get_directory_size(path):
             total_size += os.path.getsize(fp)
     return total_size
 
-def log(data: str):
+LEVEL_DEBUG = 0
+LEVEL_INFO = 1
+LEVEL_WARNING = 2
+LEVEL_CRITICAL = 3
+
+def log_level_to_str(level: int) -> str:
+    if level == LEVEL_DEBUG:
+        return " DEBUG  "
+    elif level == LEVEL_INFO:
+        return "  INFO  "
+    elif level == LEVEL_WARNING:
+        return "WARNING "
+    elif level == LEVEL_CRITICAL:
+        return "CRITICAL"
+    else:
+        return "UNKNOWN"
+
+def log(level: int, data: str):
+    ## get log level
+    sys_log_level = current_app.config["LOG_LEVEL"]
+    if level < 1 and sys_log_level == "INFO":
+        return
+    elif level < 2 and sys_log_level == "WARNING":
+        return
+    elif level < 3 and sys_log_level == "CRITICAL":
+        return
+    
     now = datetime.now()
     log_file_time = now.strftime("%Y-%m-%d")
     log_time = now.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
@@ -27,7 +53,7 @@ def log(data: str):
     try:
         # 尝试打开文件
         with open(log_file, 'a') as f:
-            f.write("[{}] {}\n".format(log_time, data))
+            f.write("[{}][{}] {}\n".format(log_time, log_level_to_str(level), data))
     except FileNotFoundError:
         print("Warning: Cannot open log file: {} does not exist.".format(log_file))
     except PermissionError:
