@@ -484,6 +484,42 @@ def external_link():
         return send_file(spath, as_attachment=True, download_name=os.path.basename(filepath))
     
 
+@file_api.route("/api/all_external_links", methods=["GET"])
+def all_external_link():
+    result = {
+        "result": "FAIL",
+        "message": "Success.",
+        "links": []
+    }
+    ## get and check session
+    session = request.cookies.get("session")
+    user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
+    if not user_uuid:
+        result["message"] = "Your session is not valid."
+        return jsonify(result)
+    result["links"] = file.get_all_external_links(conn, user_uuid)
+    result["result"] = "OK"
+    return jsonify(result)
+
+@file_api.route("/api/remove_external_link", methods=["DELETE"])
+def remove_external_link():
+    result = {
+        "result": "FAIL",
+        "message": "Success."
+    }
+    ## get and check session
+    session = request.cookies.get("session")
+    user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
+    if not user_uuid:
+        result["message"] = "Your session is not valid."
+        return jsonify(result)
+    key = request.args.get("key")
+    if file.remove_external_link(conn, user_uuid, key):
+        result["result"] = "OK"
+    else:
+        result["message"] = "Fail to remove external link."
+    return jsonify(result)
+
 @file_api.route("/api/replica", methods=["GET"])
 def replica():
     ## return if user owns the same file 
