@@ -321,6 +321,8 @@ def create_external_link(conn, user_uuid: str, path: str, expire: int) -> str:
 
 ## return (user_uuid, file_path)
 def query_external_link(conn, key: str) -> tuple[str, str]:
+    ## remove expired links
+    remove_expired_external_links(conn)
     sql = "SELECT user_uuid, file_path FROM ExternalLink WHERE share_key = %s"
     cursor = conn.cursor()
     cursor.execute(sql, (key,))
@@ -329,6 +331,48 @@ def query_external_link(conn, key: str) -> tuple[str, str]:
         return None
     else:
         return (result[0][0], result[0][1])
+
+def get_all_external_links(conn, user_uuid: str) -> list:
+    ## remove expired links
+    remove_expired_external_links(conn)
+    sql = "SELECT file_path, expire, share_key FROM ExternalLink WHERE user_uuid = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, (user_uuid,))
+    result = cursor.fetchall()
+    links = []
+    for info in result:
+        links.append({
+            "path": info[0],
+            "expire": info[1],
+            "key": info[2]
+        })
+    return links
+
+def remove_expired_external_links(conn):
+    sql = "DELETE FROM ExternalLink WHERE expire < NOW()"
+    cursor = conn.cursor()
+    try:
+        cursor.execute(sql)
+        conn.commit()
+    except Exception as e:
+        utils.log("Fail to execute SQL statement in `remove_expired_external_links()`: {}".format(e))
+        conn.rollback()
+        return False
+    cursor.close()
+    return True
+
+def remove_external_link(conn, user_uuid: str, key: str):
+    sql = "DELETE FROM ExternalLink WHERE user_uuid = %s AND share_key = %s"
+    cursor = conn.cursor()
+    try:
+        cursor.execute(sql, (user_uuid, key))
+        conn.commit()
+    except Exception as e:
+        utils.log("Fail to execute SQL statement in `remove_external_link()`: {}".format(e))
+        conn.rollback()
+        return False
+    cursor.close()
+    return True
 
 ## find all replicas
 def find_replicas(conn, user_uuid: str) -> list:
