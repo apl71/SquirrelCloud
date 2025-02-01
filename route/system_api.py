@@ -239,3 +239,11 @@ def install_plugin():
     os.system('rm temp_plugin.zip')
     result["result"] = "OK"
     return jsonify(result)
+
+@system_api.route("/api/host", methods=["GET"])
+def host():
+    result = {
+        "result": "OK",
+        "host": current_app.config["HOST"]
+    }
+    return jsonify(result)
