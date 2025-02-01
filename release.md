@@ -5,6 +5,7 @@ Before Release, check `app.config["VERSION"]` in `app.py` and finish this doc.
 Release date: 202x.xx.xx
 
 1. New feature: Now the app is modulable and an example plugin is provided.
+2. UI update: Manage external links in "function" tab.
 
 # 0.7.0
 
