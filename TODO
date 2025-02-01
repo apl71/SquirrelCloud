@@ -18,7 +18,7 @@
 [ ] 管理员磁盘用量管理
 [ ] 用icon替代emoji按钮
 [ ] Seeking hanging file.
-[ ] 现有的分享外链列表
+[x] 现有的分享外链列表
 [ ] 将颜色、样式等与主题有关的CSS移动到xxx-theme.css中
 [ ] 为不同类型的文件创建图标
 [ ] 用户可在Account tab里面更新个人信息
@@ -28,6 +28,7 @@
 [ ] 在客户端库的基础上实现客户端
 [ ] 管理员插件管理：安装、移除、更新等
 [ ] 让移动文件的接口更好用
+[ ] 优化上传动画
 
 [x] Version api.
 [x] Upload limitation. (Seems no limitation by default)
