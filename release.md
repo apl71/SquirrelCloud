@@ -6,6 +6,8 @@ Release date: 202x.xx.xx
 
 1. New feature: Now the app is modulable and an example plugin is provided.
 2. UI update: Manage external links in "function" tab.
+3. New feature: Compute size of a directory on web.
+4. New feature: HTTP downloading.
 
 # 0.7.0
 
