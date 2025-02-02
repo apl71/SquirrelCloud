@@ -102,6 +102,17 @@ def list_file(conn, user_uuid: str, path: str) -> list:
         })
     return file_infos
 
+def get_directory_size(conn, user_uuid: str, path: str) -> int:
+    if not path.endswith("/"):
+        path += "/"
+    sql = "SELECT SUM(size) FROM File WHERE owner_uuid = %s AND path LIKE %s AND type = 'TYPE_FILE'"
+    cursor = conn.cursor()
+    cursor.execute(sql, (user_uuid, "{}%".format(path)))
+    result = cursor.fetchall()
+    if len(result) == 0:
+        return 0
+    return result[0][0]
+
 def create_directory(conn, user_uuid: str, newdir: str):
     sql = "INSERT INTO File (owner_uuid, type, path) VALUES (%s, 'TYPE_DIR', %s)"
     cursor = conn.cursor()

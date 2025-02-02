@@ -168,6 +168,31 @@ def list():
     result["message"] = "Success."
     return jsonify(result)
 
+@file_api.route("/api/directory_size", methods=["GET"])
+def directory_size():
+    result = {
+        "result": "FAIL",
+        "message": "",
+        "size": 0
+    }
+    ## get and check session
+    session = request.cookies.get("session")
+    user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
+    if not user_uuid:
+        result["message"] = "Your session is not valid."
+        return jsonify(result)
+    ## get requested path to delete
+    filepath = request.args.get("path")
+    ## check if the path exists
+    if not file.directory_exists(conn, user_uuid, filepath):
+        result["message"] = "Directory does not exist."
+        return jsonify(result)
+    ## get directory size
+    result["size"] = file.get_directory_size(conn, user_uuid, filepath)
+    result["result"] = "OK"
+    result["message"] = "Success."
+    return jsonify(result)
+
 @file_api.route("/api/mkdir", methods=["POST"])
 def mkdir():
     result = {

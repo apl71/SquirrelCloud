@@ -56,6 +56,28 @@ function set_right_click_menu() {
         menu.style.display = "none";
         create_external_link(selected_file_path);
     });
+    document.getElementById("menu_size").addEventListener("click", () => {
+        menu.style.display = "none";
+        compute_size(selected_file_path);
+    });
+}
+
+function compute_size(path) {
+    params = new URLSearchParams({
+        "path": path
+    }).toString();
+    fetch("/api/directory_size?" + params, {
+        method: "GET"
+    }).then(response => {
+        return response.json();
+    }).then(response => {
+        if (response["result"] == "OK") {
+            size_cell = document.getElementById(path + "_size");
+            size_cell.innerText = user_friendly_size(response["size"]);
+        } else {
+            alert("Fail to compute the size. " + response["message"]);
+        }
+    });
 }
 
 async function load_files() {
@@ -133,21 +155,10 @@ async function load_file_table(data) {
         filename.dataset.path = full_path;
         filename.innerText = full_path.substring(full_path.lastIndexOf("/") + 1);
         filename.className = "filename";
-        // let rename_button = document.createElement("button");
-        // rename_button.innerText = "✍️";
-        // rename_button.onclick = function() {
-        //     rename(full_path);
-        // }
-        // let move_button = document.createElement("button");
-        // move_button.innerText = "➡️";
-        // move_button.onclick = function() {
-        //     move(full_path);
-        // }
-        // filename_td.appendChild(rename_button);
-        // filename_td.appendChild(move_button);
         filename_td.appendChild(filename);
         // ------------------------------------ file size ------------------------------------
         let size = document.createElement("td");
+        size.id = full_path + "_size";
         if (element["size"]) {
             size.innerText = user_friendly_size(Number(element["size"]));
         }
