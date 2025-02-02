@@ -24,7 +24,7 @@ def check_user_login(conn, username: str, password: str) -> tuple[str, str]:
             cursor.execute(sql, (uuid, session))
             conn.commit()
         except Exception as e:
-            utils.log("Fail to execute SQL statement in `check_user_login()`: {}".format(e))
+            utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `check_user_login()`: {}".format(e))
             conn.rollback()
             return (None, None)
         cursor.close()
@@ -59,7 +59,7 @@ def update_password(conn, user_uuid: str, new_password: str):
         cursor.execute(sql, (new_password, user_uuid))
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `update_password()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `update_password()`: {}".format(e))
         conn.rollback()
         return False
     cursor.close()
@@ -87,7 +87,7 @@ def remove_expired_session(conn, lifespan: int):
         cursor.execute(sql, (current_time - delta,))
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `remove_expired_session()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `remove_expired_session()`: {}".format(e))
         conn.rollback()
         return False
     cursor.close()
@@ -101,7 +101,7 @@ def remove_session(conn, session: str):
         cursor.execute(sql, (session,))
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `remove_session()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `remove_session()`: {}".format(e))
         conn.rollback()
         return False
     cursor.close()
@@ -146,7 +146,7 @@ def create_user(conn, username: str, password: str, admin: bool, email: str) -> 
         cursor.execute(sql, (username, email, password, role))
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `create_user()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `create_user()`: {}".format(e))
         conn.rollback()
         return None
     cursor.close()
