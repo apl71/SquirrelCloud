@@ -37,6 +37,8 @@ CREATE TABLE IF NOT EXISTS File (
 );
 -- TYPE_DIR, TYPE_FILE, TYPE_LINK
 INSERT INTO File (owner_uuid, type, path) VALUES ((SELECT uuid FROM AppUser WHERE username = 'admin'), 'TYPE_DIR', '/') ON CONFLICT DO NOTHING;
+ALTER TABLE File
+ALTER COLUMN size TYPE bigint USING size::bigint;
 
 CREATE TABLE IF NOT EXISTS Tag (
     uuid        varchar(256)    PRIMARY KEY DEFAULT uuid_generate_v4(),
