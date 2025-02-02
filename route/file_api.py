@@ -6,6 +6,8 @@ import os
 import shutil
 import pathlib
 import utils
+import secrets
+from threading import Thread
 
 file_api = Blueprint("file_api", __name__)
 
@@ -586,4 +588,72 @@ def replica_list():
     result["files"] = file.find_replicas(conn, user_uuid)
     result["result"] = "OK"
     result["message"] = "Success."
+    return jsonify(result)
+
+@file_api.route("/api/http_download", methods=["POST"])
+def http_download():
+    result = {
+        "result": "FAIL",
+        "message": "Success."
+    }
+    ## get and check session
+    session = request.cookies.get("session")
+    user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
+    if not user_uuid:
+        result["message"] = "Your session is not valid."
+        return jsonify(result)
+    url = request.args.get("url")
+    ## generate a task id
+    task_id = secrets.token_hex(32)
+    ## async download file
+    thread = Thread(target=file.download_file_http, args=(conn, user_uuid, url, task_id, current_app.config["STORAGE_PATH"]))
+    thread.start()
+    result["result"] = "OK"
+    result["message"] = "Success."
+    result["task_id"] = task_id
+    return jsonify(result)
+
+@file_api.route("/api/http_download_tasks", methods=["GET"])
+def http_download_tasks():
+    result = {
+        "result": "FAIL",
+        "message": "Success.",
+        "tasks": []
+    }
+    ## get and check session
+    session = request.cookies.get("session")
+    user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
+    if not user_uuid:
+        result["message"] = "Your session is not valid."
+        return jsonify(result)
+    ## get all tasks
+    for task_id in file.progress_data:
+        url, downloaded, total_size, _ = file.progress_data[task_id]
+        result["tasks"].append({
+            "task_id": task_id,
+            "url": url,
+            "downloaded": downloaded,
+            "total": total_size
+        })
+    result["result"] = "OK"
+    return jsonify(result)
+
+@file_api.route("/api/http_download_stop", methods=["DELETE"])
+def http_download_stop():
+    result = {
+        "result": "FAIL",
+        "message": "Success."
+    }
+    ## get and check session
+    session = request.cookies.get("session")
+    user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
+    if not user_uuid:
+        result["message"] = "Your session is not valid."
+        return jsonify(result)
+    ## get task id and stop it
+    task_id = request.args.get("task_id")
+    if file.stop_download(task_id):
+        result["result"] = "OK"
+    else:
+        result["message"] = "Task not found."
     return jsonify(result)

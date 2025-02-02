@@ -1,6 +1,9 @@
 function load_function() {
     load_theme();
     load_external_links();
+    setInterval(() => {
+        load_http_download_tasks();
+    }, 1000);
 }
 
 function find_replicas() {
@@ -154,6 +157,85 @@ function delete_external_link(key) {
     ).then(result => {
         if (result["result"] != "OK") {
             alert("Failed to delete external link.");
+            return;
+        }
+    });
+}
+
+function download_http() {
+    const url = document.getElementById("downloader_url").value;
+    fetch("/api/http_download?url=" + url, {
+        method: "POST"
+    }).then(
+        response => response.json()
+    ).then(result => {
+        if (result["result"] != "OK") {
+            alert("Failed to download http file.");
+            return;
+        }
+        load_http_download_tasks();
+    });
+}
+
+function load_http_download_tasks() {
+    fetch("/api/http_download_tasks", {
+        method: "GET"
+    }).then(
+        response => response.json()
+    ).then(result => {
+        if (result["result"] != "OK") {
+            alert("Failed to get http download tasks.");
+            return;
+        }
+        const tasks = result["tasks"];
+        const table = document.getElementById("download_task_table");
+        table.innerHTML = "";
+        // table header
+        const thead = document.createElement("thead");
+        const header_row = document.createElement("tr");
+        const th1 = document.createElement("th");
+        th1.textContent = "URL";
+        header_row.appendChild(th1);
+        const th2 = document.createElement("th");
+        th2.textContent = "Progress";
+        header_row.appendChild(th2);
+        const th3 = document.createElement("th");
+        th3.textContent = "Remove";
+        header_row.appendChild(th3);
+        thead.appendChild(header_row);
+        table.insertBefore(thead, table.firstChild);
+        // table body
+        const tbody = document.createElement("tbody");
+        table.appendChild(tbody);
+        tbody.innerHTML = "";
+        tasks.forEach(task => {
+            const row = tbody.insertRow(-1);
+            const url_cell = row.insertCell(0);
+            url_cell.innerHTML = task["url"];
+            const status_cell = row.insertCell(1);
+            const percent = (task["downloaded"] * 100 / task["total"]).toFixed(2);
+            status_cell.innerHTML = user_friendly_size(task["downloaded"]) + " / " + user_friendly_size(task["total"]) + " (" + percent + "%)";
+            const remove_cell = row.insertCell(2);
+            remove_cell.className = "center_cell";
+            const remove_button = document.createElement("button");
+            remove_cell.appendChild(remove_button);
+            remove_button.textContent = "X";
+            remove_button.onclick = function() {
+                delete_http_download_task(task["task_id"]);
+                load_http_download_tasks();
+            };
+        });
+    });
+}
+
+function delete_http_download_task(id) {
+    fetch("/api/http_download_stop?task_id=" + id, {
+        method: "DELETE"
+    }).then(
+        response => response.json()
+    ).then(result => {
+        if (result["result"] != "OK") {
+            alert("Failed to delete http download task.");
             return;
         }
     });

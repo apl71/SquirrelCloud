@@ -1,5 +1,8 @@
 from datetime import datetime
 import utils
+import requests
+import os
+import shutil
 
 ## check if a user owns a directory
 def directory_exists(conn, user_uuid: str, path: str) -> bool:
@@ -27,7 +30,7 @@ def insert_file(conn, user_uuid: str, path: str, hash: str, size: int):
         cursor.execute(sql, (user_uuid, "TYPE_FILE", hash, size, path))
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `insert_file()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `insert_file()`: {}".format(e))
         conn.rollback()
         return False
     cursor.close()
@@ -63,7 +66,7 @@ def remove_file(conn, user_uuid: str, path: str):
         cursor.execute(sql, (user_uuid, path))
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `remove_file()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `remove_file()`: {}".format(e))
         conn.rollback()
         return False
     cursor.close()
@@ -76,7 +79,7 @@ def remove_dir(conn, user_uuid: str, path: str):
         cursor.execute(sql, (user_uuid, "{}/%".format(path), path))
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `remove_dir()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `remove_dir()`: {}".format(e))
         conn.rollback()
         return False
     cursor.close()
@@ -120,7 +123,7 @@ def create_directory(conn, user_uuid: str, newdir: str):
         cursor.execute(sql, (user_uuid, newdir))
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `create_directory()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `create_directory()`: {}".format(e))
         conn.rollback()
         return False
     cursor.close()
@@ -173,7 +176,7 @@ def update_remark(conn, user_uuid: str, path: str, remark: str):
         cursor.execute(sql, (remark, user_uuid, path))
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `update_remark()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `update_remark()`: {}".format(e))
         conn.rollback()
         return False
     cursor.close()
@@ -189,7 +192,7 @@ def pin_or_unpin_file(conn, user_uuid: str, path: str, pin: bool):
         cursor.execute(sql, (pin, user_uuid, path))
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `pin_or_unpin_file()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `pin_or_unpin_file()`: {}".format(e))
         conn.rollback()
         return False
     cursor.close()
@@ -202,7 +205,7 @@ def create_tag(conn, user_uuid: str, tag: str):
         cursor.execute(sql, (tag, user_uuid))
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `create_tag()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `create_tag()`: {}".format(e))
         conn.rollback()
         return False
     cursor.close()
@@ -225,7 +228,7 @@ def remove_tag(conn, user_uuid: str, tag_uuid: str):
         cursor.execute(sql, (tag_uuid, user_uuid))
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `remove_tag()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `remove_tag()`: {}".format(e))
         conn.rollback()
         return False
     cursor.close()
@@ -252,7 +255,7 @@ def rename_file_or_directory(conn, user_uuid: str, path: str, new_path: str, typ
         cursor.execute(sql, (new_path, path, user_uuid))
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `rename_file_or_directory()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `rename_file_or_directory()`: {}".format(e))
         conn.rollback()
         return False
     cursor.close()
@@ -277,7 +280,7 @@ def attach_tag_to_file(conn, user_uuid: str, tag_uuid: str, path: str):
         cursor.execute(sql, (tag_uuid, path, user_uuid))
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `attach_tag_to_file()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `attach_tag_to_file()`: {}".format(e))
         conn.rollback()
         return False
     cursor.close()
@@ -302,7 +305,7 @@ def remove_tag_from_file(conn, user_uuid: str, tag_uuid: str, path: str):
         cursor.execute(sql, (tag_uuid, path, user_uuid))
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `remove_tag_from_file()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `remove_tag_from_file()`: {}".format(e))
         conn.rollback()
         return False
     cursor.close()
@@ -317,7 +320,7 @@ def create_external_link(conn, user_uuid: str, path: str, expire: int) -> str:
         cursor.execute(sql, (user_uuid, path, expire))
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `create_external_link()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `create_external_link()`: {}".format(e))
         conn.rollback()
         return None
     ## query the key
@@ -366,7 +369,7 @@ def remove_expired_external_links(conn):
         cursor.execute(sql)
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `remove_expired_external_links()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `remove_expired_external_links()`: {}".format(e))
         conn.rollback()
         return False
     cursor.close()
@@ -379,7 +382,7 @@ def remove_external_link(conn, user_uuid: str, key: str):
         cursor.execute(sql, (user_uuid, key))
         conn.commit()
     except Exception as e:
-        utils.log("Fail to execute SQL statement in `remove_external_link()`: {}".format(e))
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `remove_external_link()`: {}".format(e))
         conn.rollback()
         return False
     cursor.close()
@@ -399,3 +402,53 @@ def find_replicas(conn, user_uuid: str) -> list:
             "size":  info[2]
         })
     return result_list
+
+## download a file from http
+## save progress in global variable
+## return file path when succeed
+progress_data = {}
+## progress_data = {
+##     "task_id": [url, downloaded, total_size, stop]
+## }
+def download_file_http(conn, user_uuid: str, url: str, task_id: str, root: str) -> str:
+    response = requests.get(url, stream=True)
+    total_size = int(response.headers.get('content-length', 0))
+    downloaded = 0
+    tmp = "/tmp/{}".format(task_id)
+    filename = url.split("/")[-1]
+    global progress_data
+    progress_data[task_id] = [url, downloaded, total_size, False]
+    with open(tmp, "wb") as f:
+        for data in response.iter_content(chunk_size=1024):
+            downloaded += len(data)
+            f.write(data)
+            progress_data[task_id][1] = downloaded
+            if progress_data[task_id][3]:
+                os.remove(tmp)
+                print("remove file {}".format(tmp))
+                progress_data.pop(task_id)
+                break
+    if progress_data[task_id][1] == progress_data[task_id][2]:
+        ## move file to destination
+        hash = utils.hash_file(tmp)
+        size = os.path.getsize(tmp)
+        ## create subdirectory if not exists
+        if not os.path.exists("{}/{}".format(root, hash[0:2])):
+            os.makedirs("{}/{}".format(root, hash[0:2]))
+        shutil.move(tmp, "{}/{}/{}_{}".format(root, hash[0:2], hash, size))
+        insert_file(conn, user_uuid, "/{}".format(filename), hash, size)
+        progress_data.pop(task_id)
+    return task_id
+
+def stop_download(task_id: str):
+    global progress_data
+    ## if download finished, remove task_id in progress_data
+    if progress_data[task_id][1] == progress_data[task_id][2]:
+        progress_data.pop(task_id)
+        return True
+    ## if download not finished, set stop flag
+    if task_id in progress_data:
+        progress_data[task_id][3] = True
+        return True
+    else:
+        return False
