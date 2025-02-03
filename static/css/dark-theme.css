@@ -29,6 +29,9 @@ footer {
 .setting_section {
     background-color: #909090;
     border-radius: 10px;
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
 }
 
 .tag_li, .tag {

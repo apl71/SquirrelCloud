@@ -12,12 +12,6 @@ main {
     box-sizing: border-box;
 }
 
-.setting_section {
-    width: 100%;
-    padding: 10px;
-    box-sizing: border-box;
-}
-
 /* ---------------------- find all replica ---------------------- */
 /*
     Hide loading hint initially
