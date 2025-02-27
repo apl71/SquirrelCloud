@@ -92,6 +92,9 @@ def create_app():
     from route.system_api import system_api
     app.register_blueprint(system_api)
 
+    from route.function_api import function_api
+    app.register_blueprint(function_api)
+
     with app.app_context():
         utils.log(utils.LEVEL_INFO, "Register APIs successfully.")
 
