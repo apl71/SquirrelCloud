@@ -40,6 +40,15 @@ INSERT INTO File (owner_uuid, type, path) VALUES ((SELECT uuid FROM AppUser WHER
 ALTER TABLE File
 ALTER COLUMN size TYPE bigint USING size::bigint;
 
+CREATE TABLE IF NOT EXISTS Link (
+    uuid        varchar(256)    PRIMARY KEY DEFAULT uuid_generate_v4(),
+    owner_uuid  varchar(256)    NOT NULL,
+    path        varchar(1024)   NOT NULL,
+    target_uuid varchar(256)    NOT NULL,
+    target_path varchar(1024)   NOT NULL,
+    CONSTRAINT  UNIQUE_LINK      UNIQUE (path, owner_uuid)
+);
+
 CREATE TABLE IF NOT EXISTS Tag (
     uuid        varchar(256)    PRIMARY KEY DEFAULT uuid_generate_v4(),
     text        varchar(256)    NOT NULL,
@@ -54,3 +63,16 @@ CREATE TABLE IF NOT EXISTS ExternalLink (
     share_key   varchar(64)     DEFAULT uuid_generate_v4(),
     expire      timestamp       NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS Notification (
+    uuid                varchar(256)    PRIMARY KEY DEFAULT uuid_generate_v4(),
+    from_user_uuid      varchar(256)    NOT NULL,
+    to_user_uuid        varchar(256)    NOT NULL,
+    title               varchar(256)    NOT NULL,
+    content             text            NOT NULL,
+    type                varchar(64)     NOT NULL,
+    meta                varchar(1024),
+    create_at           timestamp       DEFAULT CURRENT_TIMESTAMP
+);
+-- TYPE_INFO, TYPE_SHARE_REQUEST
+-- meta for metadata, e.g. path of share request directory
