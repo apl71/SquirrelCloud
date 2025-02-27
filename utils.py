@@ -18,6 +18,12 @@ def get_directory_size(path):
             total_size += os.path.getsize(fp)
     return total_size
 
+def replace_prefix(text, prefix, new_prefix):
+    if text.startswith(prefix):
+        return new_prefix + text[len(prefix):]
+    else:
+        return text
+
 LEVEL_DEBUG = 0
 LEVEL_INFO = 1
 LEVEL_WARNING = 2
