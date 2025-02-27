@@ -1,9 +1,16 @@
 function load_function() {
     load_theme();
     load_external_links();
+    load_http_download_tasks();
+    load_notification();
+    // update http download status per second
     setInterval(() => {
         load_http_download_tasks();
     }, 1000);
+    // update notification per minute
+    setInterval(() => {
+        load_notification();
+    }, 60 * 1000);
 }
 
 function find_replicas() {
@@ -237,6 +244,114 @@ function delete_http_download_task(id) {
         if (result["result"] != "OK") {
             alert("Failed to delete http download task.");
             return;
+        }
+    });
+}
+
+function load_notification() {
+    fetch("/api/notification", {
+        method: "GET"
+    }).then(
+        response => response.json()
+    ).then(result => {
+        if (result["result"] != "OK") {
+            alert("Failed to get notification.");
+            return;
+        }
+        const notifications = result["notifications"];
+        // create notification table
+        const table = document.getElementById("notification_table");
+        table.innerHTML = "";
+        // table header
+        const thead = document.createElement("thead");
+        const header_row = document.createElement("tr");
+        const th1 = document.createElement("th");
+        th1.textContent = "Title";
+        header_row.appendChild(th1);
+        const th2 = document.createElement("th");
+        th2.textContent = "Content";
+        header_row.appendChild(th2);
+        const th3 = document.createElement("th");
+        th3.textContent = "Time";
+        header_row.appendChild(th3);
+        const th4 = document.createElement("th");
+        th4.textContent = "Operation";
+        header_row.appendChild(th4);
+        thead.appendChild(header_row);
+        table.insertBefore(thead, table.firstChild);
+        // table body
+        const tbody = document.createElement("tbody");
+        table.appendChild(tbody);
+        tbody.innerHTML = "";
+        notifications.forEach(notification => {
+            const row = tbody.insertRow(-1);
+            const title_cell = row.insertCell(0);
+            title_cell.innerHTML = notification["title"];
+            const content_cell = row.insertCell(1);
+            content_cell.innerHTML = notification["content"];
+            const time_cell = row.insertCell(2);
+            time_cell.innerHTML = notification["create_at"];
+            const operation_cell = row.insertCell(3);
+            operation_cell.className = "center_cell";
+            if (notification["type"] == "TYPE_SHARE_REQUEST") {
+                const accept_button = document.createElement("button");
+                operation_cell.appendChild(accept_button);
+                accept_button.textContent = "Accept";
+                accept_button.onclick = function() {
+                    // get path
+                    const path = prompt("Please enter the path to share:");
+                    accept_share_request(notification["uuid"], path);
+                };
+            }
+            const dismiss_button = document.createElement("button");
+            operation_cell.appendChild(dismiss_button);
+            dismiss_button.textContent = "Dismiss";
+            dismiss_button.onclick = function() {
+                remove_notification(notification["uuid"]);
+            };
+        });
+    });
+}
+
+function remove_notification(uuid) {
+    fetch("/api/notification", {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            "uuid": uuid
+        })
+    }).then(
+        response => response.json()
+    ).then(result => {
+        if (result["result"] != "OK") {
+            alert("Failed to remove notification.");
+            return;
+        } else {
+            load_notification();
+        }
+    });
+}
+
+function accept_share_request(uuid, path) {
+    fetch("/api/share_request", {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            "notification_uuid": uuid,
+            "path": path
+        })
+    }).then(
+        response => response.json()
+    ).then(result => {
+        if (result["result"] != "OK") {
+            alert("Failed to accept share request: " + result["message"]);
+            return;
+        } else {
+            load_notification();
         }
     });
 }

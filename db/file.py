@@ -3,6 +3,7 @@ import utils
 import requests
 import os
 import shutil
+from db import auth, notification
 
 ## check if a user owns a directory
 def directory_exists(conn, user_uuid: str, path: str) -> bool:
@@ -18,10 +19,43 @@ def directory_or_file_exists(conn, user_uuid: str, path: str, type: str) -> bool
     cursor.execute(sql, (path, user_uuid, type))
     result = cursor.fetchall()
     if len(result) == 0:
-        return False
+        return directory_or_file_exists_with_link(conn, user_uuid, path, type)
     else:
         return True
-    
+
+## given a path with link in it, convert it to the target path
+## return [target_user_uuid, target_path, link_path] if succeed, otherwise return [None, None, None]
+def convert_path_with_link(conn, user_uuid: str, path: str) -> str:
+    nodes = path.split("/")[1:]
+    nodes[0] = "/" + nodes[0]
+    for i in range(1, len(nodes) + 1):
+        sql = "SELECT path FROM File WHERE path = %s AND owner_uuid = %s AND type = 'TYPE_LINK'"
+        cursor = conn.cursor()
+        subpath = "/".join(nodes[0:i])
+        cursor.execute(sql, (subpath, user_uuid))
+        result = cursor.fetchall()
+        if len(result) > 0:
+            ## this indicates that the `subpath` is a link
+            ## get the target path
+            target_user_uuid, target_path = get_link_target_path(conn, user_uuid, subpath)
+            if target_user_uuid is None:
+                return [None, None, None]
+            path = target_path + "/" + "/".join(nodes[i:])
+            if path.endswith("/"):
+                path = path[:-1]
+            ## embedded link is not allowed, so there is no infinite loop
+            return [target_user_uuid, path, subpath]
+    return [None, None, None]
+
+def directory_or_file_exists_with_link(conn, user_uuid: str, path: str, type: str) -> bool:
+    if path == "/":
+        return False
+    target_user_uuid, target_path, _ = convert_path_with_link(conn, user_uuid, path)
+    if target_user_uuid == None:
+        return False
+    ## embedded link is not allowed, so there is no infinite loop
+    return directory_or_file_exists(conn, target_user_uuid, target_path, type)
+
 ## insert a new file
 def insert_file(conn, user_uuid: str, path: str, hash: str, size: int):
     sql = "INSERT INTO File (owner_uuid, type, hash, size, path) VALUES (%s, %s, %s, %s, %s)"
@@ -42,8 +76,14 @@ def get_hash_and_size(conn, user_uuid: str, path: str) -> tuple[str, int]:
     cursor.execute(sql, (user_uuid, path))
     result = cursor.fetchall()
     if len(result) == 0:
-        return (None, None)
+        return get_hash_and_size_with_link(conn, user_uuid, path)
     return result[0][0], result[0][1]
+
+def get_hash_and_size_with_link(conn, user_uuid: str, path: str) -> tuple[str, int]:
+    target_user_uuid, target_path, _ = convert_path_with_link(conn, user_uuid, path)
+    if target_user_uuid is None:
+        return (None, None)
+    return get_hash_and_size(conn, target_user_uuid, target_path)
 
 ## return the type of file:
 ## Regular file : TYPE_FILE
@@ -86,7 +126,7 @@ def remove_dir(conn, user_uuid: str, path: str):
     return True
 
 ## get file infomation under specific path
-def list_file(conn, user_uuid: str, path: str) -> list:
+def list_file(conn, user_uuid: str, path: str, link: bool = True) -> list:
     query = "{}%".format(path)
     sql = "SELECT path, size, type, remark, create_at, pinned, tag_uuid FROM File WHERE owner_uuid = %s AND path LIKE %s AND path NOT LIKE %s AND path != %s"
     cursor = conn.cursor()
@@ -103,7 +143,19 @@ def list_file(conn, user_uuid: str, path: str) -> list:
             "pinned": info[5],
             "tags": [get_tag_by_uuid(conn, uuid) for uuid in info[6]]
         })
-    return file_infos
+    if len(file_infos) == 0 and link:
+        return list_file_with_link(conn, user_uuid, path)
+    else:
+        return file_infos
+
+def list_file_with_link(conn, user_uuid: str, path: str) -> list:
+    if path == "/":
+        return []
+    target_user_uuid, target_path, subpath = convert_path_with_link(conn, user_uuid, path)
+    files = list_file(conn, target_user_uuid, target_path, False)
+    for file in files:
+        file["path"] = utils.replace_prefix(file["path"], target_path, subpath)
+    return files
 
 def get_directory_size(conn, user_uuid: str, path: str) -> int:
     if not path.endswith("/"):
@@ -425,7 +477,6 @@ def download_file_http(conn, user_uuid: str, url: str, task_id: str, root: str) 
             progress_data[task_id][1] = downloaded
             if progress_data[task_id][3]:
                 os.remove(tmp)
-                print("remove file {}".format(tmp))
                 progress_data.pop(task_id)
                 break
     if progress_data[task_id][1] == progress_data[task_id][2]:
@@ -452,3 +503,110 @@ def stop_download(task_id: str):
         return True
     else:
         return False
+
+## check if a file is shared with a user
+def check_share(conn, user_uuid: str, path: str, target_uuid: str) -> bool:
+    sql = "SELECT share_uuid FROM File WHERE owner_uuid = %s AND path = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, (user_uuid, path))
+    result = cursor.fetchall()
+    if len(result) == 0:
+        return None
+    return target_uuid in result[0][0]
+
+def create_share_request(conn, user_uuid: str, path: str, target_uuid: str):
+    title = "Share Request"
+    username = auth.get_username_by_uuid(conn, user_uuid)
+    content = "User [{}] wants to share directory [{}] with you.".format(username, path.split("/")[-1])
+    if notification.create_notification(conn, user_uuid, target_uuid, title, content, "TYPE_SHARE_REQUEST", path):
+        return True
+    else:
+        return False
+
+def share_directory(conn, owner_uuid: str, path: str, share_user_uuid: str):
+    sql = "UPDATE File SET share_uuid = array_append(share_uuid, %s) WHERE owner_uuid = %s AND path = %s"
+    cursor = conn.cursor()
+    try:
+        cursor.execute(sql, (share_user_uuid, owner_uuid, path))
+        conn.commit()
+    except Exception as e:
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `share_directory()`: {}".format(e))
+        conn.rollback()
+        return False
+    cursor.close()
+    utils.log(utils.LEVEL_INFO, "User [{}] shared directory [{}] with user [{}]".format(owner_uuid, path, share_user_uuid))
+    return True
+
+def create_link(conn, owner_uuid: str, path: str, target_uuid: str, target_path: str):
+    ## disallow link to link
+    if check_shared(conn, target_uuid, target_path):
+        return False
+    sql_link = "INSERT INTO Link (owner_uuid, path, target_uuid, target_path) VALUES (%s, %s, %s, %s)"
+    sql_file = "INSERT INTO File (owner_uuid, type, path) VALUES (%s, 'TYPE_LINK', %s)"
+    cursor = conn.cursor()
+    try:
+        cursor.execute(sql_link, (owner_uuid, path, target_uuid, target_path))
+        cursor.execute(sql_file, (owner_uuid, path))
+        conn.commit()
+    except Exception as e:
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `create_link()`: {}".format(e))
+        conn.rollback()
+        return False
+    cursor.close()
+    return True
+
+## if `link_path` is a link, return the target path, otherwise return None
+def get_link_target_path(conn, user_uuid: str, link_path: str):
+    sql = "SELECT target_uuid, target_path FROM Link WHERE owner_uuid = %s AND path = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, (user_uuid, link_path))
+    result = cursor.fetchall()
+    if len(result) == 0:
+        return None, None
+    else:
+        return result[0][0], result[0][1]
+
+## check if a file or directory is shared with a user
+def check_shared(conn, user_uuid: str, path: str) -> bool:
+    target_user_uuid, _, _ = convert_path_with_link(conn, user_uuid, path)
+    if target_user_uuid == None:
+        return True
+    else:
+        return False
+
+## check if a directory is shared with a user
+## if so, return the target user uuid, otherwise return empty list
+def get_shared_users(conn, user_uuid: str, path: str) -> str:
+    sql = "SELECT share_uuid FROM File WHERE owner_uuid = %s AND path = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, (user_uuid, path))
+    result = cursor.fetchall()
+    if len(result) == 0:
+        return []
+    return result[0][0]
+
+def update_link(conn, owner_uuid: str, path: str, new_path: str):
+    sql = "UPDATE Link SET path = %s WHERE owner_uuid = %s AND path = %s"
+    cursor = conn.cursor()
+    try:
+        cursor.execute(sql, (new_path, owner_uuid, path))
+        conn.commit()
+    except Exception as e:
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `update_link()`: {}".format(e))
+        conn.rollback()
+        return False
+    cursor.close()
+    return True
+
+def update_link_target(conn, owner_uuid: str, path: str, new_target_path):
+    sql = "UPDATE Link SET target_path = %s WHERE owner_uuid = %s AND path = %s"
+    cursor = conn.cursor()
+    try:
+        cursor.execute(sql, (new_target_path, owner_uuid, path))
+        conn.commit()
+    except Exception as e:
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `update_link_target()`: {}".format(e))
+        conn.rollback()
+        return False
+    cursor.close()
+    return True

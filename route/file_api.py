@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, send_file, current_app
 from app import conn
-from db import file, auth
+from db import file, auth, notification
 import uuid
 import os
 import shutil
@@ -39,6 +39,13 @@ def upload():
         result["message"] = "No path is specified."
         return jsonify(result)
     path = request.form["path"]
+    ## check if the path contains a link
+    target_user_uuid, target_path, _ = file.convert_path_with_link(conn, user_uuid, path)
+    if target_user_uuid and target_path:
+        ## do contain a link
+        path = target_path
+        user_uuid = target_user_uuid
+        ## actually, if the path contains a link, then the file should be saved for target user's file system
     ## check if path is available, i.e. is a folder in which no same file name
     if not file.directory_exists(conn, user_uuid, path):
         result["message"] = "Directory not exists."
@@ -93,7 +100,6 @@ def download():
         return jsonify(result)
     ## get requested path
     filepath = request.args.get("file")
-    print(filepath)
     ## check if file exists
     if not file.file_exists(conn, user_uuid, filepath):
         result["message"] = "File not exists."
@@ -127,6 +133,13 @@ def delete():
     if filepath == "/":
         result["message"] = "Removing root is not allowed."
         return jsonify(result)
+    ## check if there is a link in the path
+    target_user_uuid, target_path, _ = file.convert_path_with_link(conn, user_uuid, filepath)
+    if target_user_uuid and target_path:
+        ## do contain a link
+        filepath = target_path
+        user_uuid = target_user_uuid
+        ## actually, if the path contains a link, then the file should be removed for target user's file system
     ## check the type of the file, dir or file?
     type = file.get_file_type(conn, user_uuid, filepath)
     if not type:
@@ -217,6 +230,13 @@ def mkdir():
     parent_path = str(pathlib.Path(newdir).parent)
     if not file.directory_exists(conn, user_uuid, parent_path):
         result["message"] = "Parent directory '{}' does not exists.".format(parent_path)
+    ## check if there is a link in the path
+    target_user_uuid, target_path, _ = file.convert_path_with_link(conn, user_uuid, newdir)
+    if target_user_uuid and target_path:
+        ## do contain a link
+        newdir = target_path
+        user_uuid = target_user_uuid
+        ## actually, if the path contains a link, then the file should be saved for target user's file system
     file.create_directory(conn, user_uuid, newdir)
     result["result"] = "OK"
     result["message"] = "Success."
@@ -325,7 +345,19 @@ def rename():
     if file.file_exists(conn, user_uuid, new_path) or file.directory_exists(conn, user_uuid, new_path):
         result["message"] = "New name is not valid."
         return jsonify(result)
-    file.rename_file_or_directory(conn, user_uuid, path, new_path, rename_type)
+    ## check if the original path is shared from or to another user
+    ## check if there is a link in the path
+    target_user_uuid, _, _ = file.convert_path_with_link(conn, user_uuid, path)
+    if not target_user_uuid == None:
+        ## update table `LINK`
+        file.update_link(conn, user_uuid, path, new_path)
+    ## check if shared to another user
+    shared_to = file.get_shared_users(conn, user_uuid, path)
+    if len(shared_to) > 0:
+        file.update_link_target(conn, user_uuid, path, new_path)
+    if not file.rename_file_or_directory(conn, user_uuid, path, new_path, rename_type):
+        result["message"] = "Fail to rename."
+        return jsonify(result)
     result["result"] = "OK"
     return jsonify(result)
 
@@ -657,3 +689,72 @@ def http_download_stop():
     else:
         result["message"] = "Task not found."
     return jsonify(result)
+
+
+## POST: send a share request to another user
+## PUT:  accept a share request from another user
+@file_api.route("/api/share_request", methods=["POST", "PUT"])
+def share_request():
+    result = {
+        "result": "FAIL",
+        "message": "Success."
+    }
+    ## get and check session
+    session = request.cookies.get("session")
+    if request.method == "POST":
+        from_user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
+        if not from_user_uuid:
+            result["message"] = "Your session is not valid."
+            return jsonify(result)
+        ## get data
+        request_data = request.get_json()
+        target_user = request_data["target_user"]
+        target_user_uuid = auth.get_uuid_by_username(conn, target_user)
+        if not target_user_uuid:
+            result["message"] = "Target user does not exist."
+            return jsonify(result)
+        share_path = request_data["share_path"]
+        ## check if share path is valid
+        if not file.directory_exists(conn, from_user_uuid, share_path):
+            result["message"] = "Share path does not exist."
+            return jsonify(result)
+        ## check if share path is already shared to target user
+        if file.check_share(conn, from_user_uuid, share_path, target_user_uuid):
+            result["message"] = "Share path is already shared to target user."
+            return jsonify(result)
+        ## create share request
+        if file.create_share_request(conn, from_user_uuid, share_path, target_user_uuid):
+            result["result"] = "OK"
+        else:
+            result["message"] = "Fail to create share request."
+        utils.log(utils.LEVEL_INFO, "User [{}] send a share request to [{}] for [{}]".format(from_user_uuid, target_user_uuid, share_path))
+        return jsonify(result)
+    elif request.method == "PUT":
+        to_user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
+        if not to_user_uuid:
+            result["message"] = "Your session is not valid."
+            return jsonify(result)
+        ## get data
+        request_data = request.get_json()
+        notification_uuid = request_data["notification_uuid"]
+        path = request_data["path"] # link directory
+        ## create the path
+        if file.directory_exists(conn, to_user_uuid, path):
+            result["message"] = "The Path already exists."
+            return jsonify(result)
+        ## chenk if there is the share request from another user
+        if not notification.check_notification(conn, notification_uuid):
+            result["message"] = "Share request does not exist."
+            return jsonify(result)
+        ## get share request info
+        info = notification.get_notification(conn, notification_uuid)
+        if not info:
+            result["message"] = "Share request does not exist."
+            return jsonify(result)
+        if file.create_link(conn, info["to_user_uuid"], path, info["from_user_uuid"], info["meta"]):
+            result["result"] = "OK"
+            ## remove notification
+            notification.remove_notification(conn, notification_uuid)
+        else:
+            result["message"] = "Fail to create link."
+        return jsonify(result)

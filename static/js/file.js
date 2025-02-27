@@ -54,6 +54,11 @@ function set_right_click_menu() {
     });
     document.getElementById("menu_share").addEventListener("click", () => {
         menu.style.display = "none";
+        const username = prompt("Enter the username.");
+        send_share_request(selected_file_path, username);
+    });
+    document.getElementById("menu_link").addEventListener("click", () => {
+        menu.style.display = "none";
         create_external_link(selected_file_path);
     });
     document.getElementById("menu_size").addEventListener("click", () => {
@@ -226,15 +231,6 @@ async function load_file_table(data) {
             }
         }
         pin_td.appendChild(pin_button);
-        // ------------------------------------ share ------------------------------------
-        // let share_td = document.createElement("td");
-        // share_td.className = "share_td";
-        // let share_button = document.createElement("button");
-        // share_button.innerText = "Share";
-        // share_button.onclick = function() {
-        //     create_external_link(full_path);
-        // }
-        // share_td.appendChild(share_button);
 
         row.appendChild(icon_td);
         row.appendChild(filename_td);
@@ -242,9 +238,7 @@ async function load_file_table(data) {
         row.appendChild(tags_td);
         row.appendChild(remark);
         row.appendChild(created);
-        //row.appendChild(delete_td);
         row.appendChild(pin_td);
-        //row.appendChild(share_td);
         table.appendChild(row);
         if (element["type"] == "TYPE_FILE") {
             filename_td.ondblclick = function() {
@@ -254,16 +248,13 @@ async function load_file_table(data) {
                 open_preview(element["path"]);
             };
             icon.src = "/img/file.ico";
-        } else if (element["type"] == "TYPE_DIR") {
+        } else if (element["type"] == "TYPE_DIR" || element["type"] == "TYPE_LINK") {
             row.ondblclick = function() {
                 document.getElementById("current_path").value = element["path"];
                 load_files(element["path"]);
             };
             icon.src = "/img/dir.ico";
         }
-        // delete_button.onclick = function() {
-        //     delete_file_or_directory(full_path);
-        // }
     });
 }
 
@@ -558,6 +549,27 @@ function create_external_link(fullpath) {
             alert("Fail to create external link. " + response["message"]);
         } else {
             alert("The link will expire in 10 days: " + response["link"]);
+        }
+    });
+}
+
+function send_share_request(selected_file_path, username) {
+    fetch("/api/share_request", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            "share_path": selected_file_path,
+            "target_user": username
+        })
+    }).then(response => {
+        return response.json();
+    }).then(response => {
+        if (response["result"] != "OK") {
+            alert("Fail to share the file. " + response["message"]);
+        } else {
+            alert("Share request sent.");
         }
     });
 }
