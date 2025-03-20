@@ -46,7 +46,7 @@ async function update_server() {
         return;
     }
     document.getElementById("update_message").innerText = "Updating... Please hold on.";
-    var response = await fetch("/api/check_update", {
+    var response = await fetch("/api/update", {
         method: "GET"
     });
     response = await response.json();
