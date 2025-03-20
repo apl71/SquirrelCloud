@@ -1,2 +1,2 @@
 ## package code into a zip file
-zip -q -r squirrelcloud-0.7.0.zip . -x "__pycache__/" "*/__pycache__/" "*.pyc" "*.zip" ".venv/" "venv" ".venv/*" "*/.pytest_cache/" ".pytest_cache/*" ".pytest_cache/" "*/.git/" ".git/" ".git/*" "*/.gitignore" ".gitignore" "*/.DS_Store" ".DS_Store" "*/.vscode/" ".vscode/" "*/.idea/" ".idea/" "*/.gitlab-ci.yml" 
+zip -q -r squirrelcloud-0.8.0.zip . -x "__pycache__/" "*/__pycache__/" "*.pyc" "*.zip" ".venv/" "venv" ".venv/*" "*/.pytest_cache/" ".pytest_cache/*" ".pytest_cache/" "*/.git/" ".git/" ".git/*" "*/.gitignore" ".gitignore" "*/.DS_Store" ".DS_Store" "*/.vscode/" ".vscode/" "*/.idea/" ".idea/" "*/.gitlab-ci.yml" 
