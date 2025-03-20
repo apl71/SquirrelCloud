@@ -68,6 +68,27 @@ Copy sources to docker volume.
 
 `docker compose up -d`
 
+## Developing environment
+
+It is relatively easy to run an instance for developing. Make sure you have python3 and PostgreSQL installed.
+
+First, clone the repository:
+`git clone https://github.com/apl71/SquirrelCloud`
+
+Second, create a virtual environment for app and activate it:
+```
+cd SquirrelCloud
+python3 -m venv venv
+source venv/bin/activate # may vary on different platform
+```
+
+Then, install requirements:
+`python -m pip install -r requirements.txt`
+
+Now, open the configuration file `app.conf` and modify it if necessary.
+
+Finally, start the app by typing `python wsgi.py` and hitting the enter.
+
 ## Squirrel Cloud Syncer
 
 ## External Resources
