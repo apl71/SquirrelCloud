@@ -106,6 +106,7 @@ def update_system():
     os.system('rm temp_source.zip')
     ## restart server
     utils.kill_program()
+    return jsonify(result)
 
 @system_api.route("/api/disk_usage", methods=["GET"])
 def disk_usage():
