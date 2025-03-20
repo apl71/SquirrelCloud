@@ -62,12 +62,19 @@ def update_system():
     ## save configuration file to dict
     conf = open("{}/app.conf".format(current_app.config["CODE_PATH"]), "r")
     original_conf = toml.load(conf)
-    ## fetch new sources
+    ## fetch new version number
     latest = utils.check_update()
     if latest == None:
         result["message"] = "Fail to fetch new version number."
         return jsonify(result)
-    http_path = "{}/download/squirrelcloud-{}.zip".format(current_app.config["UPDATE_SERVER"], latest)
+    ## fetch metadata
+    mata_path = "{}/api/package?version={}".format(current_app.config["UPDATE_SERVER"], latest)
+    metadata = requests.get(mata_path).json()
+    if metadata["result"] != "OK":
+        result["message"] = "Fail to fetch metadata."
+        return jsonify(result)
+    ## fetch new sources
+    http_path = "{}/api/download?version={}".format(current_app.config["UPDATE_SERVER"], latest)
     new_source_zip = requests.get(http_path)
     if new_source_zip.status_code != 200:
         result["message"] = "Fail to fetch new source."
@@ -75,8 +82,15 @@ def update_system():
     else:
         zip_file = open("temp_source.zip", "wb")
         zip_file.write(new_source_zip.content)
+        ## compute checksum
+        hash = utils.hash_file("temp_source.zip")
+        if hash != metadata["hash"]:
+            result["message"] = "Checksum failed. Expected: {}, Got: {}".format(metadata["hash"], hash)
+            return jsonify(result)
+        zip_file.close()
     ## zip old sources
-    os.system('zip -q -r squirrelcloud-{}.zip {} -x "__pycache__/" "*/__pycache__/" "*.pyc" "*.zip"'.format(current_app.config["VERSION"], current_app.config["CODE_PATH"]))
+    zip_cmd = 'zip -q -r squirrelcloud-{}.zip {} -x "__pycache__/" "*/__pycache__/" "*.pyc" "*.zip" ".venv/" "venv" ".venv/*" "*/.pytest_cache/" ".pytest_cache/*" ".pytest_cache/" "*/.git/" ".git/" ".git/*" "*/.gitignore" ".gitignore" "*/.DS_Store" ".DS_Store" "*/.vscode/" ".vscode/" "*/.idea/" ".idea/" "*/.gitlab-ci.yml" '.format(current_app.config["VERSION"], current_app.config["CODE_PATH"])
+    os.system(zip_cmd)
     ## unzip new sources
     os.system('unzip -o temp_source.zip -d {}'.format(current_app.config["CODE_PATH"]))
     ## read new config

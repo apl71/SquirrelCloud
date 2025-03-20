@@ -77,8 +77,8 @@ def kill_program():
 
 def check_update() -> str:
     ## get latest version
-    url = "{}/latest.html".format(current_app.config["UPDATE_SERVER"])
-    latest = requests.get(url).text.strip()
+    url = "{}/api/latest".format(current_app.config["UPDATE_SERVER"])
+    latest = requests.get(url).json()["version"].strip()
     if bool(re.match(r'^.+\..+\..+$', latest)):
         return latest
     else:
