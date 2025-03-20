@@ -2,12 +2,13 @@ Before Release, check `app.config["VERSION"]` in `app.py` and finish this doc.
 
 # 0.8.0
 
-Release date: 202x.xx.xx
+Release date: 2025.03.20
 
 1. New feature: Now the app is modulable and an example plugin is provided.
 2. UI update: Manage external links in "function" tab.
 3. New feature: Compute size of a directory on web.
 4. New feature: HTTP downloading.
+5. New feature: Adapte to new update server. Checking hash before replacing.
 
 # 0.7.0
 
