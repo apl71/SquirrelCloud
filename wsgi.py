@@ -3,6 +3,11 @@ from app import create_app
 
 app = create_app()
 
+@app.after_request
+def after_request(response):
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    return response
+
 if __name__ == "__main__":
     ssl_context = ("cert/cert.pem", "cert/key.pem")
     debug = False
