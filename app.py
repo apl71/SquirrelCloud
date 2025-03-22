@@ -78,7 +78,7 @@ def create_app():
     app.conn = conn
 
     ## setting version
-    app.config["VERSION"] = "0.8.0"
+    app.config["VERSION"] = "0.9.0"
     with app.app_context():
         utils.log(utils.LEVEL_INFO, "Starting Squirrel Cloud Version: {}".format(app.config["VERSION"]))
 
