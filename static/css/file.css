@@ -112,11 +112,19 @@ td {
 */
 #upload_section {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 10px;
     padding-bottom: 7px;
+}
+
+#upload_container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
 }
 
 /* input */
@@ -124,6 +132,24 @@ td {
     border: #a2a2a2 1px dashed;
     border-radius: 5px;
     padding: 5px;
+}
+
+#progress_bar_container {
+    width: 40%;
+    display: none;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+#progress_bar {
+    flex: 1;
+    margin-right: 10px;
+}
+
+#progress_bytes, #progress_speed, #progress_percent, #progress_remaining {
+    flex: 1;
+    text-align: right;
 }
 
 /*

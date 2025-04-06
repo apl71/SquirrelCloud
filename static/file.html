@@ -67,15 +67,24 @@
 
         <!-- Section of uploading function -->
         <section id="upload_section">
-            <p>Upload Your file here.</p>
-            <form>
-                <input type="file" name="file" id="file">
-                <button type="button" onclick="upload_file()">Upload!</button>
-            </form>
-            <form>
-                <input type="file" name="files" id="directory" webkitdirectory directory multiple>
-                <button type="button" onclick="upload_directory()">Upload!</button>
-            </form>
+            <div id="upload_container">
+                <p>Upload Your file here.</p>
+                <form>
+                    <input type="file" name="file" id="file">
+                    <button id="upload_file_button" type="button" onclick="upload_file()">Upload!</button>
+                </form>
+                <form>
+                    <input type="file" name="files" id="directory" webkitdirectory directory multiple>
+                    <button id="upload_directory_button" type="button" onclick="upload_directory()">Upload!</button>
+                </form>
+            </div>
+            <div id="progress_bar_container">
+                <progress id="progress_bar" value="0" max="100"></progress>
+                <label id="progress_bytes"></label>
+                <label id="progress_speed"></label>
+                <label id="progress_percent"></label>
+                <label id="progress_remaining"></label>
+            </div>
         </section>
     </main>
 </body>

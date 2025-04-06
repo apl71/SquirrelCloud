@@ -266,55 +266,100 @@ async function open_preview(vpath) {
     window.open("/preview.html?path=" + encodeURIComponent(vpath), "_blank");
 }
 
-async function upload_file() {
+async function upload_common(inputElementId, apiEndpoint, isDirectory = false) {
+    const input = document.getElementById(inputElementId);
+    const container = document.getElementById('progress_bar_container');
+    const progress_bar = document.getElementById('progress_bar');
+    const progress_bytes = document.getElementById('progress_bytes');
+    const progress_speed = document.getElementById('progress_speed');
+    const progress_percent = document.getElementById('progress_percent');
+    const progress_remaining = document.getElementById('progress_remaining');
+    container.style.display = "flex"; // Show progress bar
+
+    // Disable upload buttons
+    const upload_file_button = document.getElementById("upload_file_button");
+    const upload_directory_button = document.getElementById("upload_directory_button");
+    upload_file_button.disabled = true;
+    upload_directory_button.disabled = true;
+
+    const files = input.files;
+    if (files.length === 0) {
+        alert(isDirectory ? "No directory selected." : "No file selected.");
+        return;
+    }
+
     const form_data = new FormData();
     form_data.append("path", document.getElementById("current_path").value);
-    form_data.append("file", document.getElementById("file").files[0]);
-    if (getCookie("replica") == "true") {
+
+    if (isDirectory) {
+        // Add files with relative paths for directory upload
+        Array.from(files).forEach((file, index) => {
+            form_data.append(`file${index}`, file, file.webkitRelativePath);
+        });
+        form_data.append("file_num", files.length);
+    } else {
+        // Add single file for file upload
+        form_data.append("file", files[0]);
+    }
+
+    if (getCookie("replica") === "true") {
         form_data.append("replica", true);
     }
-    const response = await fetch("/api/upload", {
-        method: "POST",
-        body: form_data
-    });
-    const res = await response.json();
-    if (res["result"] == "OK") {
-        load_files();
-    } else {
-        alert("Fail to upload file: " + res["message"]);
-    }
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', apiEndpoint, true);
+
+    let last_loaded = 0;
+    let last_timestamp = Date.now();
+
+    xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable && (Date.now() - last_timestamp > 1000 || last_loaded === 0)) {
+            const percent = (event.loaded / event.total) * 100;
+            progress_bar.value = percent;
+            progress_bytes.innerText = user_friendly_size(event.loaded) + "/" + user_friendly_size(event.total);
+            progress_percent.innerText = percent.toFixed(1) + "%";
+            progress_speed.innerText = user_friendly_size((event.loaded - last_loaded) / ((Date.now() - last_timestamp) / 1000)) + "/s";
+            const speed = (event.loaded - last_loaded) / ((Date.now() - last_timestamp) / 1000);
+            progress_remaining.innerText = ((event.total - event.loaded) / speed).toFixed(0) + "s remaining";
+            last_loaded = event.loaded;
+            last_timestamp = Date.now();
+        }
+    };
+
+    xhr.onload = () => {
+        if (xhr.status === 200) {
+            progress_bar.value = 100;
+            const result = JSON.parse(xhr.responseText);
+            if (result["result"] === "OK") {
+                load_files();
+            } else {
+                alert("Fail to upload: " + result["message"]);
+            }
+            // Enable upload buttons
+            upload_file_button.disabled = false;
+            upload_directory_button.disabled = false;
+            setTimeout(() => {
+                container.style.display = "none"; // Hide progress bar after 5 seconds
+                progress_bar.value = 0; // Reset progress bar value
+            }, 3000);
+        } else {
+            alert('Upload failed.');
+        }
+    };
+
+    xhr.onerror = () => {
+        alert('Error uploading.');
+    };
+
+    xhr.send(form_data);
+}
+
+async function upload_file() {
+    upload_common('file', '/api/upload', false);
 }
 
 async function upload_directory() {
-    const form_data = new FormData();
-    // add root path to form data
-    form_data.append("path", document.getElementById("current_path").value);
-    const files = document.getElementById("directory").files;
-    if (files.length == 0) {
-        alert("No directory selected.");
-        return;
-    }
-    // add files to form data
-    let i = 0;
-    Array.from(files).forEach(file => {
-        console.log("Relative path:", file.webkitRelativePath);
-        form_data.append("file" + i, file, file.webkitRelativePath); // preserve folder structure on server
-        i++;
-    });
-    form_data.append("file_num", i);
-    if (getCookie("replica") == "true") {
-        form_data.append("replica", true);
-    }
-    const response = await fetch("/api/upload_directory", {
-        method: "POST",
-        body: form_data
-    });
-    const res = await response.json();
-    if (res["result"] == "OK") {
-        load_files();
-    } else {
-        alert("Fail to upload directory: " + res["message"]);
-    }
+    upload_common('directory', '/api/upload_directory', true);
 }
 
 function mkdir() {
