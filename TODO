@@ -35,6 +35,8 @@
 [ ] 文件版本控制
 [ ] 可创建新文本文件
 [ ] Bug: HTTP下载列表刷新不正常
+[ ] 新增设置：上传黑名单（文件名、等属性）
+[ ] 回收站
 
 [x] Version api.
 [x] Upload limitation. (Seems no limitation by default)
