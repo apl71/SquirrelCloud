@@ -65,15 +65,10 @@ def upload_directory():
             break
         ## create sub-directory
         sub_path = os.path.join(os.path.join(vpath, os.path.dirname(file_storage.filename)))
-        print("file: ", vpath)
-        print("create sub_path: ", sub_path)
-        r, m = file.create_directory(conn, user_uuid, sub_path, True)
-        print(m)
+        file.create_directory(conn, user_uuid, sub_path, True)
         if not file.directory_exists(conn, user_uuid, sub_path):
             result["message"] = "Fail to create directory."
-            print("Fail to create directory.")
             return jsonify(result)
-        print("created.")
         ## check if the file is empty
         if file_storage.filename == "":
             result["message"] = "Empty file is not allowed."

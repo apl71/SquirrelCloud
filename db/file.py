@@ -172,7 +172,6 @@ def get_directory_size(conn, user_uuid: str, path: str) -> int:
 def create_directory(conn, user_uuid: str, newdir: str, recursive: bool = False) -> tuple[bool, str]:
     ## end of recursion
     if directory_exists(conn, user_uuid, newdir) and recursive:
-        print("Directory '{}' already exists. Recursion ends.".format(newdir))
         return True, "OK"
     ## check if the name is used or not
     if directory_exists(conn, user_uuid, newdir) or file_exists(conn, user_uuid, newdir):
@@ -183,7 +182,6 @@ def create_directory(conn, user_uuid: str, newdir: str, recursive: bool = False)
         if not recursive:
             return False, "Parent directory '{}' does not exists.".format(parent_path)
         else:
-            print("Parent directory '{}' does not exists, create it.".format(parent_path))
             result, message = create_directory(conn, user_uuid, parent_path, recursive)
             if not result:
                 return result, message
@@ -638,7 +636,7 @@ def update_link_target(conn, owner_uuid: str, path: str, new_target_path):
 ## `replica` is a boolean value, if True, check if the file is already exists
 ## if so, remove the file and return the path of the first replica
 ## if not, save the file and return the path of the new file
-def save_and_register_file(conn, user_uuid: str, vpath: str, file_storage, storage_path: str, replica: bool) -> list:
+def save_and_register_file(conn, user_uuid: str, vpath: str, file_storage, storage_path: str, replica: bool) -> dict:
     result = {
         "result": "FAIL",
         "message": "File saved."
