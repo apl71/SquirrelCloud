@@ -1,6 +1,7 @@
 from datetime import datetime
 import utils
 import requests
+import uuid
 import os
 import shutil
 from db import auth, notification
@@ -168,18 +169,36 @@ def get_directory_size(conn, user_uuid: str, path: str) -> int:
         return 0
     return result[0][0]
 
-def create_directory(conn, user_uuid: str, newdir: str):
+def create_directory(conn, user_uuid: str, newdir: str, recursive: bool = False) -> tuple[bool, str]:
+    ## end of recursion
+    if directory_exists(conn, user_uuid, newdir) and recursive:
+        print("Directory '{}' already exists. Recursion ends.".format(newdir))
+        return True, "OK"
+    ## check if the name is used or not
+    if directory_exists(conn, user_uuid, newdir) or file_exists(conn, user_uuid, newdir):
+        return False, "File or directory is already exists."
+    ## check if the parent path exists
+    parent_path = str(os.path.dirname(newdir))
+    if not directory_exists(conn, user_uuid, parent_path):
+        if not recursive:
+            return False, "Parent directory '{}' does not exists.".format(parent_path)
+        else:
+            print("Parent directory '{}' does not exists, create it.".format(parent_path))
+            result, message = create_directory(conn, user_uuid, parent_path, recursive)
+            if not result:
+                return result, message
     sql = "INSERT INTO File (owner_uuid, type, path) VALUES (%s, 'TYPE_DIR', %s)"
     cursor = conn.cursor()
     try:
         cursor.execute(sql, (user_uuid, newdir))
         conn.commit()
     except Exception as e:
-        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `create_directory()`: {}".format(e))
+        message = "Fail to execute SQL statement in `create_directory()`: {}".format(e)
+        utils.log(utils.LEVEL_WARNING, message)
         conn.rollback()
-        return False
+        return False, message
     cursor.close()
-    return True
+    return True, "OK"
 
 ## search file or directory containing certain substring
 def search(conn, user_uuid: str, query: str) -> list:
@@ -610,3 +629,65 @@ def update_link_target(conn, owner_uuid: str, path: str, new_target_path):
         return False
     cursor.close()
     return True
+
+## save a file and register it in database
+## `file_storage` is a FileStorage object, obtained from ``request.files['file']``
+## `user_uuid` is the uuid of the user who owns the file
+## `vpath` is the path to save the file, it should be a directory
+## `storage_path` is the app configuration for the storage path
+## `replica` is a boolean value, if True, check if the file is already exists
+## if so, remove the file and return the path of the first replica
+## if not, save the file and return the path of the new file
+def save_and_register_file(conn, user_uuid: str, vpath: str, file_storage, storage_path: str, replica: bool) -> list:
+    result = {
+        "result": "FAIL",
+        "message": "File saved."
+    }
+    pname = str(uuid.uuid4())
+    ppath = os.path.join(storage_path, pname)
+    ## check if the path contains a link
+    target_user_uuid, target_path, _ = convert_path_with_link(conn, user_uuid, vpath)
+    if target_user_uuid and target_path:
+        ## do contain a link
+        vpath = target_path
+        user_uuid = target_user_uuid
+        ## actually, if the path contains a link, then the file should be saved for target user's file system
+    ## check if path is available, i.e. is a folder in which no same file name
+    if not directory_exists(conn, user_uuid, vpath):
+        result["message"] = "Directory not exists."
+        return result
+    vpath = os.path.join(vpath, file_storage.filename)
+    if file_exists(conn, user_uuid, vpath):
+        result["message"] = "File already exists."
+        return result
+    if file_storage:
+        file_storage.save(ppath)
+        ## compute hash value
+        hash = utils.hash_file(ppath)
+        ## get file size
+        size = os.path.getsize(ppath)
+        ## check redundent if there is params 'replica=true'
+        if replica:
+            replicas = search_by_id(conn, user_uuid, hash, size)
+            if len(replicas) > 0:
+                replica_path = search_by_uuid(conn, user_uuid, replicas[0])
+                ## remove temp file
+                os.remove(ppath)
+                result["message"] = "First replica [{}].".format(replica_path)
+                return result
+        ## create folder for file according to the first two chars of hash
+        newfolder = os.path.join(storage_path, hash[0:2])
+        if not os.path.exists(newfolder):
+            os.makedirs(newfolder)
+        ## move file into according folder and rename to [HASH]_[SIZE]
+        newpath = os.path.join(newfolder, "{}_{}".format(hash, size))
+        ## check if the file is already exists
+        if not os.path.exists(newpath):
+            shutil.move(ppath, newpath)
+        else:
+            if os.path.exists(ppath):
+                os.remove(ppath)
+        ## insert new file item into database
+        insert_file(conn, user_uuid, vpath, hash, size)
+        result["result"] = "OK"
+        return result

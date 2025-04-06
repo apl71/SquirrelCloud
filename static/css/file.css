@@ -119,6 +119,13 @@ td {
     padding-bottom: 7px;
 }
 
+/* input */
+#upload_section form {
+    border: #a2a2a2 1px dashed;
+    border-radius: 5px;
+    padding: 5px;
+}
+
 /*
     right-click menu
 */

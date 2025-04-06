@@ -285,6 +285,38 @@ async function upload_file() {
     }
 }
 
+async function upload_directory() {
+    const form_data = new FormData();
+    // add root path to form data
+    form_data.append("path", document.getElementById("current_path").value);
+    const files = document.getElementById("directory").files;
+    if (files.length == 0) {
+        alert("No directory selected.");
+        return;
+    }
+    // add files to form data
+    let i = 0;
+    Array.from(files).forEach(file => {
+        console.log("Relative path:", file.webkitRelativePath);
+        form_data.append("file" + i, file, file.webkitRelativePath); // preserve folder structure on server
+        i++;
+    });
+    form_data.append("file_num", i);
+    if (getCookie("replica") == "true") {
+        form_data.append("replica", true);
+    }
+    const response = await fetch("/api/upload_directory", {
+        method: "POST",
+        body: form_data
+    });
+    const res = await response.json();
+    if (res["result"] == "OK") {
+        load_files();
+    } else {
+        alert("Fail to upload directory: " + res["message"]);
+    }
+}
+
 function mkdir() {
     const new_dir = prompt("Enter your folder name.");
     if (new_dir.indexOf("/") > -1) {

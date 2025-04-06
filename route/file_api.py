@@ -1,9 +1,7 @@
 from flask import Blueprint, request, jsonify, send_file, current_app
 from app import conn
 from db import file, auth, notification
-import uuid
 import os
-import shutil
 import pathlib
 import utils
 import secrets
@@ -28,8 +26,6 @@ def upload():
         result["message"] = "No file is uploaded."
         return jsonify(result)
     file_storage = request.files["file"]
-    filename = str(uuid.uuid4())
-    filepath = os.path.join(current_app.config["STORAGE_PATH"], filename)
     ## check if the file is empty
     if file_storage.filename == "":
         result["message"] = "Empty file is not allowed."
@@ -38,54 +34,56 @@ def upload():
     if "path" not in request.form:
         result["message"] = "No path is specified."
         return jsonify(result)
-    path = request.form["path"]
-    ## check if the path contains a link
-    target_user_uuid, target_path, _ = file.convert_path_with_link(conn, user_uuid, path)
-    if target_user_uuid and target_path:
-        ## do contain a link
-        path = target_path
-        user_uuid = target_user_uuid
-        ## actually, if the path contains a link, then the file should be saved for target user's file system
-    ## check if path is available, i.e. is a folder in which no same file name
-    if not file.directory_exists(conn, user_uuid, path):
-        result["message"] = "Directory not exists."
-        return jsonify(result)
-    vpath = os.path.join(path, file_storage.filename)
-    if file.file_exists(conn, user_uuid, vpath):
-        result["message"] = "File already exists."
-        return jsonify(result)
-    if file_storage:
-        file_storage.save(filepath)
-        ## compute hash value
-        hash = utils.hash_file(filepath)
-        ## get file size
-        size = os.path.getsize(filepath)
-        ## check redundent if there is params 'replica=true'
-        if "replica" in request.form and request.form["replica"]:
-            replicas = file.search_by_id(conn, user_uuid, hash, size)
-            if len(replicas) > 0:
-                replica_path = file.search_by_uuid(conn, user_uuid, replicas[0])
-                ## remove temp file
-                os.remove(filepath)
-                result["message"] = "First replica [{}].".format(replica_path)
-                return jsonify(result)
-        ## create folder for file according to the first two chars of hash
-        newfolder = os.path.join(current_app.config["STORAGE_PATH"], hash[0:2])
-        if not os.path.exists(newfolder):
-            os.makedirs(newfolder)
-        ## move file into according folder and rename to [HASH]_[SIZE]
-        newpath = os.path.join(newfolder, "{}_{}".format(hash, size))
-        ## check if the file is already exists
-        if not os.path.exists(newpath):
-            shutil.move(filepath, newpath)
-        else:
-            if os.path.exists(filepath):
-                os.remove(filepath)
-        ## insert new file item into database
-        file.insert_file(conn, user_uuid, vpath, hash, size)
-        result["result"] = "OK"
-        return jsonify(result)
+    vpath = request.form["path"]
+    result = file.save_and_register_file(conn, user_uuid, vpath, file_storage, current_app.config["STORAGE_PATH"], "replica" in request.form and request.form["replica"])
+    return jsonify(result)
     
+@file_api.route("/api/upload_directory", methods=["POST"])
+def upload_directory():
+    result = {
+        "result": "FAIL",
+        "message": "Files saved."
+    }
+    ## check session
+    session = request.cookies.get("session")
+    user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
+    if not user_uuid:
+        result["message"] = "Your session is not valid."
+        return jsonify(result)
+    ## get input path
+    if "path" not in request.form:
+        result["message"] = "No path is specified."
+        return jsonify(result)
+    vpath = request.form["path"]
+    file_num = request.form["file_num"]
+    ## upload files
+    i = 0
+    while i < int(file_num):
+        result["result"] = "OK"
+        file_storage = request.files["file{}".format(i)]
+        if not file_storage:
+            break
+        ## create sub-directory
+        sub_path = os.path.join(os.path.join(vpath, os.path.dirname(file_storage.filename)))
+        print("file: ", vpath)
+        print("create sub_path: ", sub_path)
+        r, m = file.create_directory(conn, user_uuid, sub_path, True)
+        print(m)
+        if not file.directory_exists(conn, user_uuid, sub_path):
+            result["message"] = "Fail to create directory."
+            print("Fail to create directory.")
+            return jsonify(result)
+        print("created.")
+        ## check if the file is empty
+        if file_storage.filename == "":
+            result["message"] = "Empty file is not allowed."
+            return jsonify(result)
+        result = file.save_and_register_file(conn, user_uuid, vpath, file_storage, current_app.config["STORAGE_PATH"], "replica" in request.form and request.form["replica"])
+        if result["result"] == "FAIL":
+            return jsonify(result)
+        i += 1
+    return jsonify(result)
+
 @file_api.route("/api/download", methods=["GET"])
 def download():
     result = {
@@ -222,14 +220,6 @@ def mkdir():
         return jsonify(result)
     ## get requested path
     newdir = request.args.get("path")
-    ## check if the name is used or not
-    if file.directory_exists(conn, user_uuid, newdir) or file.file_exists(conn, user_uuid, newdir):
-        result["message"] = "File or directory is already exists."
-        return jsonify(result)
-    ## check if the parent path exists
-    parent_path = str(pathlib.Path(newdir).parent)
-    if not file.directory_exists(conn, user_uuid, parent_path):
-        result["message"] = "Parent directory '{}' does not exists.".format(parent_path)
     ## check if there is a link in the path
     target_user_uuid, target_path, _ = file.convert_path_with_link(conn, user_uuid, newdir)
     if target_user_uuid and target_path:
@@ -237,7 +227,10 @@ def mkdir():
         newdir = target_path
         user_uuid = target_user_uuid
         ## actually, if the path contains a link, then the file should be saved for target user's file system
-    file.create_directory(conn, user_uuid, newdir)
+    r, m = file.create_directory(conn, user_uuid, newdir)
+    if not r:
+        result["message"] = m
+        return jsonify(result)
     result["result"] = "OK"
     result["message"] = "Success."
     return jsonify(result)
