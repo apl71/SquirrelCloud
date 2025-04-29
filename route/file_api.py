@@ -6,6 +6,9 @@ import pathlib
 import utils
 import secrets
 from threading import Thread
+import tempfile
+import queue
+import shutil
 
 file_api = Blueprint("file_api", __name__)
 
@@ -93,20 +96,47 @@ def download():
         return jsonify(result)
     ## get requested path
     filepath = request.args.get("file")
-    ## check if file exists
-    if not file.file_exists(conn, user_uuid, filepath):
-        result["message"] = "File not exists."
+    if file.file_exists(conn, user_uuid, filepath):
+        ## send a file
+        ## get file hash and size
+        hash, size = file.get_hash_and_size(conn, user_uuid, filepath)
+        if not hash or not size:
+            result["message"] = "File not exists."
+            return jsonify(result)
+        spath = os.path.join(current_app.config["STORAGE_PATH"], hash[0:2], "{}_{}".format(hash, size))
+        if not os.path.exists(spath):
+            result["message"] = "File accidentally lost."
+            return jsonify(result)
+        return send_file(spath, as_attachment=True, download_name=os.path.basename(filepath))
+    elif file.directory_exists(conn, user_uuid, filepath):
+        ## send a directory
+        ## create a temporary directory for holding files
+        with tempfile.TemporaryDirectory() as temp_dir:
+            ## list all item in `filepath`
+            directory_queue = queue.Queue()
+            directory_queue.put(filepath)
+            while not directory_queue.empty():
+                current_vpath = directory_queue.get()
+                current_ppath = os.path.join(temp_dir, os.path.relpath(current_vpath, filepath))
+                print("Traversing: {}".format(current_vpath))
+                print("Go to target: {}".format(current_ppath))
+                files = file.list_file(conn, user_uuid, current_vpath)
+                for f in files:
+                    if f["type"] == "TYPE_FILE":
+                        ## copy the file into folder
+                        hash, size = file.get_hash_and_size(conn, user_uuid, f["path"])
+                        spath = os.path.join(current_app.config["STORAGE_PATH"], hash[0:2], "{}_{}".format(hash, size))
+                        shutil.copy(spath, current_ppath)
+                        shutil.move(os.path.join(current_ppath, "{}_{}".format(hash, size)), os.path.join(current_ppath, os.path.basename(f["path"])))
+                    else:
+                        ## create directory and push to queue
+                        os.mkdir(os.path.join(current_ppath, os.path.basename(f["path"])))
+                        directory_queue.put(f["path"])
+            shutil.make_archive(temp_dir, "zip", temp_dir)
+            return send_file(temp_dir + ".zip", as_attachment=True, download_name=os.path.basename(filepath) + ".zip")
+    else:
+        result["message"] = "No such file or directory."
         return jsonify(result)
-    ## get file hash and size
-    hash, size = file.get_hash_and_size(conn, user_uuid, filepath)
-    if not hash or not size:
-        result["message"] = "File not exists."
-        return jsonify(result)
-    spath = os.path.join(current_app.config["STORAGE_PATH"], hash[0:2], "{}_{}".format(hash, size))
-    if not os.path.exists(spath):
-        result["message"] = "File accidentally lost."
-        return jsonify(result)
-    return send_file(spath, as_attachment=True, download_name=os.path.basename(filepath))
 
 @file_api.route("/api/delete", methods=["DELETE"])
 def delete():
