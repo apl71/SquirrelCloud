@@ -4,6 +4,7 @@ function initialize_server_status() {
     load_users();
     load_plugins();
     load_theme();
+    load_config();
 }
 
 function load_disk_usage() {
@@ -172,4 +173,74 @@ function install_plugin(name, version) {
         }
         alert("Plugin installed.");
     });
+}
+
+function load_config() {
+    fetch("/api/config", {
+        method: "GET"
+    }).then(response => {
+        return response.json();
+    }).then(response => {
+        if (response["result"] != "OK") {
+            return;
+        } else {
+            const config = response["config"];
+            const config_table = document.getElementById("config_table");
+            for (const key in config) {
+                const tr = document.createElement("tr");
+                const td1 = document.createElement("td");
+                td1.innerText = key;
+                tr.appendChild(td1);
+                const td2 = document.createElement("td");
+                const input = document.createElement("input");
+                input.type = "text";
+                input.value = config[key];
+                td2.appendChild(input);
+                tr.appendChild(td2);
+                const td3 = document.createElement("td");
+                const save_button = document.createElement("button");
+                save_button.innerText = "Save";
+                save_button.onclick = function() {
+                    const value = input.value;
+                    update_config(key, value);
+                }
+                td3.appendChild(save_button);
+                const remove_button = document.createElement("button");
+                remove_button.innerText = "Remove";
+                remove_button.onclick = function() {
+                    const value = input.value;
+                    // TODO: remove config
+                    update_config(key, null);
+                }
+                td3.appendChild(remove_button);
+                tr.appendChild(td3);
+                config_table.appendChild(tr);
+                if (key == "DB_PWD") {
+                    input.type = "password";
+                }
+            }
+        }
+    });
+}
+
+function update_config(key, value) {
+    const configUpdate = {};
+    configUpdate[key] = value;
+
+    fetch("/api/config", {
+        method: "POST",
+        body: JSON.stringify(configUpdate),
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }).then(response => {
+        return response.json();
+    }).then(response => {
+        if (response["result"] != "OK") {
+            alert("Failed to update config.");
+            return;
+        }
+        alert("Config updated. Restarting...");
+    });
+
 }

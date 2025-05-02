@@ -4,7 +4,8 @@ Before Release, check `app.config["VERSION"]` in `app.py` and finish this doc.
 
 Release date: 2025.xx.xx
 
-1. New feature: Directories can be uploaded by web interface.
+1. New feature: Directories can be uploaded and downloaded by web interface.
+2. New feature: Admin users can update configuration in web interface.
 
 # 0.8.0
 

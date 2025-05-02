@@ -262,3 +262,39 @@ def host():
         "host": current_app.config["HOST"]
     }
     return jsonify(result)
+
+
+@system_api.route("/api/config", methods=["GET", "POST"])
+def config():
+    result = {
+        "result": "FAIL",
+        "message": "Success."
+    }
+    ## get and check session
+    session = request.cookies.get("session")
+    user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
+    if not user_uuid:
+        result["message"] = "Your session is not valid."
+        return jsonify(result)
+    if not auth.check_admin_user(conn, user_uuid):
+        result["message"] = "You are not administrator."
+        return jsonify(result)
+    ## get config
+    if request.method == "GET":
+        conf = open("app.conf", "r")
+        result["config"] = toml.load(conf)
+        result["result"] = "OK"
+        return jsonify(result)
+    ## update config
+    elif request.method == "POST":
+        conf = open("app.conf", "r")
+        original_conf = toml.load(conf)
+        new_conf = request.json
+        for key, value in new_conf.items():
+            original_conf[key] = value
+        conf = open("app.conf", "w")
+        toml.dump(original_conf, conf)
+        result["result"] = "OK"
+        result["message"] = "Configuration updated. Restarting."
+        utils.kill_program()
+        return jsonify(result)

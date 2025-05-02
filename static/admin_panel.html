@@ -2,10 +2,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="author" content="apl71" />
-    <title>Squirrel Cloud - Server Status</title>
+    <title>Squirrel Cloud - Admin Panel</title>
     <link rel="stylesheet" class="theme" href="css/nut-theme.css">
-    <link rel="stylesheet" href="css/server_status.css">
-    <script src="js/server_status.js"></script>
+    <link rel="stylesheet" href="css/admin_panel.css">
+    <script src="js/admin_panel.js"></script>
     <script src="js/utils.js"></script>
 </head>
 
@@ -52,6 +52,18 @@
                 <tr>
                     <th>Plugin Name</th>
                     <th>Version</th>
+                    <th>Actions</th>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Section for configuration -->
+        <section class="setting_section">
+            <h2>Configuration</h2>
+            <table id="config_table" class="common_table">
+                <tr>
+                    <th>Configuration Name</th>
+                    <th>Value</th>
                     <th>Actions</th>
                 </tr>
             </table>
