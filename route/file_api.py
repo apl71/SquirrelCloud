@@ -156,6 +156,9 @@ def delete():
     if filepath == "/":
         result["message"] = "Removing root is not allowed."
         return jsonify(result)
+    if filepath == "/recycle":
+        result["message"] = "Removing recycle bin is not allowed."
+        return jsonify(result)
     ## check if there is a link in the path
     target_user_uuid, target_path, _ = file.convert_path_with_link(conn, user_uuid, filepath)
     if target_user_uuid and target_path:

@@ -4,7 +4,6 @@
 [ ] 支持多个主存储目录
 [ ] Is it right to query disk space in a docker containner?
 [ ] UI可以选择分享外链的过期时间
-[x] zip形式下载文件夹
 [ ] 自动从本地文件夹中导入文件
 [ ] 按标签搜索
 [ ] 隐私目录，仅搜索可见
@@ -19,12 +18,10 @@
 [ ] 将颜色、样式等与主题有关的CSS移动到xxx-theme.css中
 [ ] 为不同类型的文件创建图标
 [ ] 用户可在Account tab里面更新个人信息
-[x] 管理员可在web上修改及更新update server
 [ ] 实现一个python客户端库
 [ ] 在客户端库的基础上实现客户端
 [ ] 管理员插件管理：安装、移除、更新等
 [ ] 让移动文件的接口更好用
-[x] 优化上传动画（上传进度条）
 [ ] 更多离线下载协议（种子等）
 [ ] 智能标签
 [ ] py文件越来越长，需要合理分割一下
@@ -36,8 +33,11 @@
 [ ] 可创建新文本文件
 [ ] Bug: HTTP下载列表刷新不正常
 [ ] 新增设置：上传黑名单（文件名、等属性）
-[ ] 回收站
 
+[x] zip形式下载文件夹
+[x] 管理员可在web上修改及更新update server
+[x] 优化上传动画（上传进度条）
+[x] 回收站
 [x] Version api.
 [x] Upload limitation. (Seems no limitation by default)
 [x] External link(file sharing with non-sc user).

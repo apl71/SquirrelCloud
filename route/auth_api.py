@@ -100,6 +100,10 @@ def register():
     if not file.create_directory(conn, new_uuid, "/"):
         result["message"] = "Fail to create root for new user."
         return jsonify(result)
+    ## create recycle bin for new user
+    if not file.create_directory(conn, new_uuid, "/recycle"):
+        result["message"] = "Fail to create recycle bin for new user."
+        return jsonify(result)
     result["result"] = "OK"
     utils.log(utils.LEVEL_INFO, "User {} created by admin.".format(username))
     return jsonify(result)

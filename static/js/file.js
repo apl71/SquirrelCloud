@@ -38,7 +38,13 @@ function set_right_click_menu() {
     });
     document.getElementById("menu_delete").addEventListener("click", () => {
         menu.style.display = "none";
-        delete_file_or_directory(selected_file_path);
+        if (selected_file_path.startsWith("/recycle")) {
+            if (confirm("Are you sure to permenently delete this file?")) {
+                delete_file_or_directory(selected_file_path);
+            }
+        } else {
+            move_to_path(selected_file_path, "/recycle/" + selected_file_path.substring(selected_file_path.lastIndexOf("/") + 1));
+        }
     });
     document.getElementById("menu_pin").addEventListener("click", () => {
         menu.style.display = "none";
@@ -569,9 +575,13 @@ function move(path) {
     } else {
         target_path = target_path + "/" + filename;
     }
+    move_to_path(path, target_path);
+}
+
+function move_to_path(src, dest) {
     const data = {
-        "path": path,
-        "new_path":  target_path
+        "path": src,
+        "new_path":  dest
     };
     fetch("/api/rename", {
         method: "POST",
