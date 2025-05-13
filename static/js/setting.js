@@ -131,18 +131,25 @@ function load_upload_filter_table() {
             return;
         }
         // generate header
-        var header = upload_filter_table.createTHead();
-        var row = header.insertRow(0);
-        var filter_cell = row.insertCell(0);
-        var type_cell = row.insertCell(1);
-        var value_cell = row.insertCell(2);
-        var activation_cell = row.insertCell(3);
-        var action_cell = row.insertCell(4);
-        filter_cell.innerHTML = "Filter";
-        type_cell.innerHTML = "Type";
-        value_cell.innerHTML = "Value";
-        activation_cell.innerHTML = "Activation";
-        action_cell.innerHTML = "Action";
+        const thead = document.createElement("thead");
+        const header_row = document.createElement("tr");
+        const th1 = document.createElement("th");
+        th1.innerText = "Filter";
+        const th2 = document.createElement("th");
+        th2.innerText = "Type";
+        const th3 = document.createElement("th");
+        th3.innerText = "Value";
+        const th4 = document.createElement("th");
+        th4.innerText = "Activation";
+        const th5 = document.createElement("th");
+        th5.innerText = "Action";
+        header_row.appendChild(th1);
+        header_row.appendChild(th2);
+        header_row.appendChild(th3);
+        header_row.appendChild(th4);
+        header_row.appendChild(th5);
+        thead.appendChild(header_row);
+        upload_filter_table.appendChild(thead);
         // generate body
         response["filters"].forEach(element => {
             var row = upload_filter_table.insertRow();
