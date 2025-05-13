@@ -307,10 +307,17 @@ async function upload_common(inputElementId, apiEndpoint, isDirectory = false) {
 
     if (isDirectory) {
         progress_bytes.innerText = "We are checking the filters... Please wait.";
+        let filters = await get_all_filters();
+        if (filters["result"] != "OK") {
+            alert("Fail to get filters: " + filters["message"] + ". No filters will be applied.");
+            return;
+        } else {
+            filters = filters["filters"];
+        }
         let file_index = 0;
         // Add files with relative paths for directory upload
         for (const [_, file] of Array.from(files).entries()) {
-            const filtered = await check_file_filtered(file);
+            const filtered = await check_file_filtered(filters, file);
             if (filtered) {
                 filtered_files.push(file.name);
             } else {
@@ -376,7 +383,7 @@ async function upload_common(inputElementId, apiEndpoint, isDirectory = false) {
 
     xhr.send(form_data);
     if (filtered_files.length > 0 && isDirectory) {
-        alert("The following " + filtered_files.length + " file()s are filtered: " + filtered_files.join(", "));
+        alert("The following " + filtered_files.length + " file(s) are filtered: " + filtered_files.join(", "));
     }
 }
 
@@ -702,44 +709,41 @@ function send_share_request(selected_file_path, username) {
     });
 }
 
-async function check_file_filtered(file) {
+async function get_all_filters() {
     const response = await fetch("/api/upload_filter", {
         method: "GET"
     });
     const data = await response.json();
+    return data;
+}
 
-    if (data["result"] === "OK") {
-        const filters = data["filters"];
-        for (const filter of filters) {
-            if (filter["filter"] === "file_name" && filter["active"]) {
-                if (filter["type"] === "IS" && file.name === filter["value"]) {
-                    return true;
-                } else if (filter["type"] === "IS_NOT" && file.name !== filter["value"]) {
-                    return true;
-                } else if (filter["type"] === "CONTAINS" && file.name.includes(filter["value"])) {
-                    return true;
-                } else if (filter["type"] === "NOT_CONTAINS" && !file.name.includes(filter["value"])) {
-                    return true;
-                }
-            }
-            if (filter["filter"] === "file_size" && filter["active"]) {
-                if (filter["type"] === "GREATER" && file.size > parseInt(filter["value"])) {
-                    return true;
-                } else if (filter["type"] === "LESS" && file.size < parseInt(filter["value"])) {
-                    return true;
-                }
-            }
-            if (filter["filter"] === "extension" && filter["active"]) {
-                if (filter["type"] === "IS" && file.name.endsWith(filter["value"])) {
-                    return true;
-                } else if (filter["type"] === "IS_NOT" && !file.name.endsWith(filter["value"])) {
-                    return true;
-                }
+async function check_file_filtered(filters, file) {
+    for (const filter of filters) {
+        if (filter["filter"] === "file_name" && filter["active"]) {
+            if (filter["type"] === "IS" && file.name === filter["value"]) {
+                return true;
+            } else if (filter["type"] === "IS_NOT" && file.name !== filter["value"]) {
+                return true;
+            } else if (filter["type"] === "CONTAINS" && file.name.includes(filter["value"])) {
+                return true;
+            } else if (filter["type"] === "NOT_CONTAINS" && !file.name.includes(filter["value"])) {
+                return true;
             }
         }
-        return false;
-    } else {
-        alert("Fail to get upload filter. " + data["message"]);
-        return false;
+        if (filter["filter"] === "file_size" && filter["active"]) {
+            if (filter["type"] === "GREATER" && file.size > parseInt(filter["value"])) {
+                return true;
+            } else if (filter["type"] === "LESS" && file.size < parseInt(filter["value"])) {
+                return true;
+            }
+        }
+        if (filter["filter"] === "extension" && filter["active"]) {
+            if (filter["type"] === "IS" && file.name.endsWith(filter["value"])) {
+                return true;
+            } else if (filter["type"] === "IS_NOT" && !file.name.endsWith(filter["value"])) {
+                return true;
+            }
+        }
     }
+    return false;
 }
