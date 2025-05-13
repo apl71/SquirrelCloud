@@ -689,3 +689,76 @@ def save_and_register_file(conn, user_uuid: str, vpath: str, file_storage, stora
         insert_file(conn, user_uuid, vpath, hash, size)
         result["result"] = "OK"
         return result
+    
+def get_all_upload_filters(conn, user_uuid: str) -> list:
+    sql = "SELECT uuid, filter, type, value, active FROM UploadFilter WHERE user_uuid = %s"
+    cursor = conn.cursor()
+    cursor.execute(sql, (user_uuid,))
+    result = cursor.fetchall()
+    filters = []
+    for info in result:
+        filters.append({
+            "uuid": info[0],
+            "filter": info[1],
+            "type": info[2],
+            "value": info[3],
+            "active": info[4]
+        })
+    return filters
+
+filter_list = ["file_name", "file_size", "extension"]
+type_list = ["IS", "IS_NOT", "CONTAINS", "NOT_CONTAINS", "GREATER", "LESS"]
+
+def add_upload_filter(conn, user_uuid: str, filter: str, type: str, value: str):
+    if filter not in filter_list:
+        utils.log(utils.LEVEL_WARNING, "Invalid filter type: {}".format(type))
+        return False
+    if type not in type_list:
+        utils.log(utils.LEVEL_WARNING, "Invalid filter type: {}".format(type))
+        return False
+    sql = "INSERT INTO UploadFilter (user_uuid, filter, type, value) VALUES (%s, %s, %s, %s)"
+    cursor = conn.cursor()
+    ## create a new filter
+    try:
+        cursor.execute(sql, (user_uuid, filter, type, value))
+        conn.commit()
+    except Exception as e:
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `add_upload_filter()`: {}".format(e))
+        conn.rollback()
+        return False
+    cursor.close()
+    return True
+
+def update_upload_filter(conn, user_uuid: str, filter_uuid: str, filter: str, type: str, value: str, active: bool):
+    sql = """
+        UPDATE UploadFilter
+        SET
+            filter = COALESCE(%s, filter),
+            type   = COALESCE(%s, type),
+            value  = COALESCE(%s, value),
+            active = COALESCE(%s, active)
+        WHERE uuid = %s AND user_uuid = %s;
+    """
+    cursor = conn.cursor()
+    try:
+        cursor.execute(sql, (filter, type, value, active, filter_uuid, user_uuid))
+        conn.commit()
+    except Exception as e:
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `update_upload_filter()`: {}".format(e))
+        conn.rollback()
+        return False
+    cursor.close()
+    return True
+
+def remove_upload_filter(conn, user_uuid: str, filter_uuid: str):
+    sql = "DELETE FROM UploadFilter WHERE uuid = %s AND user_uuid = %s"
+    cursor = conn.cursor()
+    try:
+        cursor.execute(sql, (filter_uuid, user_uuid))
+        conn.commit()
+    except Exception as e:
+        utils.log(utils.LEVEL_WARNING, "Fail to execute SQL statement in `remove_upload_filter()`: {}".format(e))
+        conn.rollback()
+        return False
+    cursor.close()
+    return True

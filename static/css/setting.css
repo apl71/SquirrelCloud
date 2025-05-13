@@ -42,3 +42,7 @@ main {
     border-radius: 5px;
     padding: 5px 8px 5px 8px;
 }
+
+.common_table {
+    width: 100%;
+}

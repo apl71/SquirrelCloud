@@ -6,6 +6,8 @@ Release date: 2025.xx.xx
 
 1. New feature: Directories can be uploaded and downloaded by web interface.
 2. New feature: Admin users can update configuration in web interface.
+3. New feature: When a directory of file is removed, it goes into `/recycle` instead of going away forever. If it is already in `/recycle`, a prompt will pop up to confirm.
+4. New feature: When uploading a directory, user can apply a set of filters to exclude specific files.
 
 # 0.8.0
 

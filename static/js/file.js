@@ -297,12 +297,23 @@ async function upload_common(inputElementId, apiEndpoint, isDirectory = false) {
     const form_data = new FormData();
     form_data.append("path", document.getElementById("current_path").value);
 
+    let filtered_files = [];
+
     if (isDirectory) {
+        progress_bytes.innerText = "We are checking the filters... Please wait.";
+        let file_index = 0;
         // Add files with relative paths for directory upload
-        Array.from(files).forEach((file, index) => {
-            form_data.append(`file${index}`, file, file.webkitRelativePath);
-        });
-        form_data.append("file_num", files.length);
+        for (const [_, file] of Array.from(files).entries()) {
+            const filtered = await check_file_filtered(file);
+            if (filtered) {
+                filtered_files.push(file.name);
+            } else {
+                form_data.append(`file${file_index}`, file, file.webkitRelativePath);
+                file_index++;
+            }
+        }
+        form_data.append("file_num", file_index);
+        progress_bytes.innerText = "";
     } else {
         // Add single file for file upload
         form_data.append("file", files[0]);
@@ -358,6 +369,9 @@ async function upload_common(inputElementId, apiEndpoint, isDirectory = false) {
     };
 
     xhr.send(form_data);
+    if (filtered_files.length > 0 && isDirectory) {
+        alert("The following " + filtered_files.length + " file()s are filtered: " + filtered_files.join(", "));
+    }
 }
 
 async function upload_file() {
@@ -659,4 +673,46 @@ function send_share_request(selected_file_path, username) {
             alert("Share request sent.");
         }
     });
+}
+
+async function check_file_filtered(file) {
+    const response = await fetch("/api/upload_filter", {
+        method: "GET"
+    });
+    const data = await response.json();
+
+    if (data["result"] === "OK") {
+        const filters = data["filters"];
+        for (const filter of filters) {
+            if (filter["filter"] === "file_name" && filter["active"]) {
+                if (filter["type"] === "IS" && file.name === filter["value"]) {
+                    return true;
+                } else if (filter["type"] === "IS_NOT" && file.name !== filter["value"]) {
+                    return true;
+                } else if (filter["type"] === "CONTAINS" && file.name.includes(filter["value"])) {
+                    return true;
+                } else if (filter["type"] === "NOT_CONTAINS" && !file.name.includes(filter["value"])) {
+                    return true;
+                }
+            }
+            if (filter["filter"] === "file_size" && filter["active"]) {
+                if (filter["type"] === "GREATER" && file.size > parseInt(filter["value"])) {
+                    return true;
+                } else if (filter["type"] === "LESS" && file.size < parseInt(filter["value"])) {
+                    return true;
+                }
+            }
+            if (filter["filter"] === "extension" && filter["active"]) {
+                if (filter["type"] === "IS" && file.name.endsWith(filter["value"])) {
+                    return true;
+                } else if (filter["type"] === "IS_NOT" && !file.name.endsWith(filter["value"])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    } else {
+        alert("Fail to get upload filter. " + data["message"]);
+        return false;
+    }
 }

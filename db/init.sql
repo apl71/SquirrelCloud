@@ -76,3 +76,14 @@ CREATE TABLE IF NOT EXISTS Notification (
 );
 -- TYPE_INFO, TYPE_SHARE_REQUEST
 -- meta for metadata, e.g. path of share request directory
+
+CREATE TABLE IF NOT EXISTS UploadFilter (
+    uuid        varchar(256)    PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_uuid   varchar(256)    NOT NULL,
+    filter      varchar(256)    NOT NULL,
+    type        varchar(16)     NOT NULL,
+    value       varchar(256)    NOT NULL,
+    active      boolean         DEFAULT true
+);
+-- filter: file name, file size, extension
+-- type: IS, IS_NOT, CONTAINS, NOT_CONTAINS, GREATER, LESS
