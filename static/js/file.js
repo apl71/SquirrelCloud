@@ -36,14 +36,20 @@ function set_right_click_menu() {
         menu.style.display = "none";
         move(selected_file_path);
     });
-    document.getElementById("menu_delete").addEventListener("click", () => {
+    document.getElementById("menu_delete").addEventListener("click", async () => {
         menu.style.display = "none";
         if (selected_file_path.startsWith("/recycle")) {
             if (confirm("Are you sure to permenently delete this file?")) {
                 delete_file_or_directory(selected_file_path);
             }
         } else {
-            move_to_path(selected_file_path, "/recycle/" + selected_file_path.substring(selected_file_path.lastIndexOf("/") + 1));
+            let path = "/recycle/" + selected_file_path.substring(selected_file_path.lastIndexOf("/") + 1);
+            let count = 1;
+            while ((await search(path))["files"].length != 0) {
+                path = "/recycle/" + selected_file_path.substring(selected_file_path.lastIndexOf("/") + 1) + "(" + count + ")";
+                count++;
+            }
+            move_to_path(selected_file_path, path);
         }
     });
     document.getElementById("menu_pin").addEventListener("click", () => {
@@ -425,22 +431,43 @@ async function delete_file_or_directory(path) {
     }
 }
 
-function search_file() {
-    const query = document.getElementById("search");
-    params = new URLSearchParams({
-        "query": query.value
+async function search(query) {
+    const params = new URLSearchParams({
+        "query": query
     }).toString();
-    fetch("/api/search?" + params, {
-        method: "GET"
-    }).then(response => {
-        return response.json();
-    }).then(response => {
-        if (response["result"] == "OK") {
-            load_file_table(response);
-        } else {
-            alert(response["message"]);
+    const json = await fetch("/api/search?" + params.toString(), {
+        method: "GET",
+        mode: "cors",
+        headers: {
+            "Content-Type": "application/json"
         }
     });
+    const result = await json.json();
+    return result;
+}
+
+function search_file() {
+    const query = document.getElementById("search").value;
+    result = search(query);
+    if (result["result"] == "OK") {
+        load_file_table(result);
+    } else {
+        alert(result["message"]);
+    }
+    // params = new URLSearchParams({
+    //     "query": query.value
+    // }).toString();
+    // fetch("/api/search?" + params, {
+    //     method: "GET"
+    // }).then(response => {
+    //     return response.json();
+    // }).then(response => {
+    //     if (response["result"] == "OK") {
+    //         load_file_table(response);
+    //     } else {
+    //         alert(response["message"]);
+    //     }
+    // });
 }
 
 async function update_remark(path) {
