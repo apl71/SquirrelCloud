@@ -59,6 +59,9 @@ def upload_directory():
         return jsonify(result)
     vpath = request.form["path"]
     file_num = request.form["file_num"]
+    if int(file_num) < 1:
+        result["message"] = "No file is uploaded."
+        return jsonify(result)
     ## upload files
     i = 0
     while i < int(file_num):
@@ -778,4 +781,59 @@ def share_request():
             notification.remove_notification(conn, notification_uuid)
         else:
             result["message"] = "Fail to create link."
+        return jsonify(result)
+    
+@file_api.route("/api/upload_filter", methods=["GET", "PUT", "POST", "DELETE"])
+def upload_filter():
+    result = {
+        "result": "FAIL",
+        "message": "Success."
+    }
+    ## get and check session
+    session = request.cookies.get("session")
+    user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
+    if not user_uuid:
+        result["message"] = "Your session is not valid."
+        return jsonify(result)
+    if request.method == "GET":
+        ## get file list
+        filters = file.get_all_upload_filters(conn, user_uuid)
+        result["filters"] = filters
+        result["result"] = "OK"
+        return jsonify(result)
+    elif request.method == "PUT":
+        ## get data
+        request_data = request.get_json()
+        filter = request_data["filter"]
+        type = request_data["type"]
+        value = request_data["value"]
+        ## add the filter
+        if file.add_upload_filter(conn, user_uuid, filter, type, value):
+            result["result"] = "OK"
+        else:
+            result["message"] = "Fail to add upload filter."
+        return jsonify(result)
+    elif request.method == "POST":
+        ## get data
+        request_data = request.get_json()
+        filter_uuid = request_data["uuid"]
+        filter = request_data.get("filter")
+        type = request_data.get("type")
+        value = request_data.get("value")
+        active = request_data.get("active")
+        ## remove the filter
+        if file.update_upload_filter(conn, user_uuid, filter_uuid, filter, type, value, active):
+            result["result"] = "OK"
+        else:
+            result["message"] = "Fail to update upload filter."
+        return jsonify(result)
+    elif request.method == "DELETE":
+        ## get data
+        request_data = request.get_json()
+        filter_uuid = request_data["uuid"]
+        ## remove the filter
+        if file.remove_upload_filter(conn, user_uuid, filter_uuid):
+            result["result"] = "OK"
+        else:
+            result["message"] = "Fail to remove upload filter."
         return jsonify(result)
