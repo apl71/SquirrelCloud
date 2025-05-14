@@ -453,28 +453,14 @@ async function search(query) {
     return result;
 }
 
-function search_file() {
+async function search_file() {
     const query = document.getElementById("search").value;
-    result = search(query);
+    result = await search(query);
     if (result["result"] == "OK") {
         load_file_table(result);
     } else {
         alert(result["message"]);
     }
-    // params = new URLSearchParams({
-    //     "query": query.value
-    // }).toString();
-    // fetch("/api/search?" + params, {
-    //     method: "GET"
-    // }).then(response => {
-    //     return response.json();
-    // }).then(response => {
-    //     if (response["result"] == "OK") {
-    //         load_file_table(response);
-    //     } else {
-    //         alert(response["message"]);
-    //     }
-    // });
 }
 
 async function update_remark(path) {
