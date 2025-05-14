@@ -1,8 +1,16 @@
 Before Release, check `app.config["VERSION"]` in `app.py` and finish this doc.
 
-# 0.9.0
+# 0.9.1
 
 Release date: 2025.xx.xx
+
+1. New feature: A path selector is prompted when move a file or directory.
+2. Bug fix: The problem with searching is fixed.
+3. New feature: The limit of file size is removed.
+
+# 0.9.0
+
+Release date: 2025.05.13
 
 1. New feature: Directories can be uploaded and downloaded by web interface.
 2. New feature: Admin users can update configuration in web interface.
