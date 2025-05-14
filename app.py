@@ -100,5 +100,7 @@ def create_app():
 
     load_plugin(app)
 
+    app.config["MAX_CONTENT_LENGTH"] = None
+
     return app
 
