@@ -1,8 +1,12 @@
 async function load() {
     load_files();
+    load_selector_directory_table();
     set_right_click_menu();
     load_theme();
 }
+
+// this variable is used to store the source path of the file to be moved
+let move_source = null;
 
 function set_right_click_menu() {
     const file_table = document.getElementById("file_table");
@@ -34,7 +38,8 @@ function set_right_click_menu() {
     });
     document.getElementById("menu_move").addEventListener("click", () => {
         menu.style.display = "none";
-        move(selected_file_path);
+        move_source = selected_file_path;
+        document.getElementById("path_selector").style.display = "flex";
     });
     document.getElementById("menu_delete").addEventListener("click", async () => {
         menu.style.display = "none";
@@ -97,8 +102,7 @@ function compute_size(path) {
     });
 }
 
-async function load_files() {
-    const path = document.getElementById("current_path").value;
+async function get_files_in_directory(path) {
     // check if the path exists
     params = new URLSearchParams({
         "type": "TYPE_DIR",
@@ -133,9 +137,35 @@ async function load_files() {
             "Content-Type": "application/json"
         }
     });
+    return response.json();
+}
+
+async function load_files() {
+    const path = document.getElementById("current_path").value;
+    const data = (await get_files_in_directory(path));
     // load data into table
-    load_file_table(await response.json());
+    load_file_table(data);
     document.getElementById("current_path").value = path;
+}
+
+async function load_selector_directory_table() {
+    const path = document.getElementById("selected_path").value;
+    const data = (await get_files_in_directory(path));
+    // load data into table
+    const table = document.getElementById("path_selector_ul");
+    // clear table
+    table.innerHTML = "";
+    data["files"].forEach(element => {
+        if (element["type"] == "TYPE_DIR" || element["type"] == "TYPE_LINK") {
+            let row = document.createElement("li");
+            row.innerText = element["path"].split("/").slice(-1)[0];
+            row.ondblclick = function() {
+                document.getElementById("selected_path").value = element["path"];
+                load_selector_directory_table();
+            };
+            table.appendChild(row);
+        }
+    });
 }
 
 async function load_file_table(data) {
@@ -221,12 +251,6 @@ async function load_file_table(data) {
         let created = document.createElement("td");
         created.className = "create_time";
         created.innerText = convertDateFormat(element["create_at"]);
-        // ------------------------------------ delete ------------------------------------
-        // let delete_td = document.createElement("td");
-        // let delete_button = document.createElement("button");
-        // delete_td.className = "delete_td";
-        // delete_button.innerText = "❌";
-        // delete_td.appendChild(delete_button);
         // ------------------------------------ pinned ------------------------------------
         let pin_td = document.createElement("td");
         pin_td.className = "pin_td";
@@ -395,7 +419,17 @@ async function upload_directory() {
     upload_common('directory', '/api/upload_directory', true);
 }
 
-function mkdir() {
+async function make_directory(new_dir) {
+    params = new URLSearchParams({
+        "path": new_dir
+    }).toString();
+    result = await fetch("/api/mkdir?" + params, {
+        method: "POST"
+    });
+    return await result.json();
+}
+
+async function mkdir() {
     const new_dir = prompt("Enter your folder name.");
     if (new_dir.indexOf("/") > -1) {
         alert("'/' cannot appear in a folder name.");
@@ -403,20 +437,28 @@ function mkdir() {
     }
     const current_path = document.getElementById("current_path").value;
     const full_dir = current_path + (current_path == "/" ? "" : "/") + new_dir;
-    params = new URLSearchParams({
-        "path": full_dir
-    }).toString();
-    fetch("/api/mkdir?" + params, {
-        method: "POST"
-    }).then(response => {
-        return response.json();
-    }).then(response => {
-        if (response["result"] == "OK") {
-            load_files();
-        } else {
-            alert("Fail to create directory: " + response["message"]);
-        }
-    });
+    response = await make_directory(full_dir);
+    if (response["result"] == "OK") {
+        load_files();
+    } else {
+        alert("Fail to create directory: " + response["message"]);
+    }
+}
+
+async function selector_mkdir() {
+    const new_dir = prompt("Enter your folder name.");
+    if (new_dir.indexOf("/") > -1) {
+        alert("'/' cannot appear in a folder name.");
+        return;
+    }
+    const current_path = document.getElementById("selected_path").value;
+    const full_dir = current_path + (current_path == "/" ? "" : "/") + new_dir;
+    response = await make_directory(full_dir);
+    if (response["result"] == "OK") {
+        load_selector_directory_table();
+    } else {
+        alert("Fail to create directory: " + response["message"]);
+    }
 }
 
 async function delete_file_or_directory(path) {
@@ -647,9 +689,27 @@ function to_parent() {
     load_files();
 }
 
+function selector_to_parent() {
+    const current_path = document.getElementById("selected_path").value;
+    if (current_path == "/") {
+        return;
+    }
+    let parent_path = current_path.substring(0, current_path.lastIndexOf('/'));
+    if (parent_path == "") {
+        parent_path = "/";
+    }
+    document.getElementById("selected_path").value = parent_path;
+    load_selector_directory_table();
+}
+
 function to_home() {
     document.getElementById("current_path").value = "/";
     load_files();
+}
+
+function selector_to_home() {
+    document.getElementById("selected_path").value = "/";
+    load_selector_directory_table();
 }
 
 function create_external_link(fullpath) {
@@ -732,4 +792,21 @@ async function check_file_filtered(filters, file) {
         }
     }
     return false;
+}
+
+function close_path_selector() {
+    document.getElementById("selected_path").value = "/";
+    document.getElementById("path_selector").style.display = "none";
+}
+
+function ok_path_selector() {
+    let selected_path = document.getElementById("selected_path").value;
+    if (selected_path == move_source) {
+        alert("The selected path is the same as the current path.");
+        return;
+    }
+    selected_path += (selected_path == "/" ? "" : "/") + move_source.substring(move_source.lastIndexOf("/") + 1);
+    move_to_path(move_source, selected_path);
+    close_path_selector();
+    load_files();
 }

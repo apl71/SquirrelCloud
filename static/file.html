@@ -26,6 +26,28 @@
             <li id="menu_size">Size</li>
         </ul>
     </div>
+
+    <!-- path selector -->
+    <div id="path_selector">
+        <div id="path_selector_container">
+            <div id="selected_path_row">
+                <form id="selected_path_form">
+                    <input type="text" id="selected_path" value="/">
+                    <button type="button" onclick="load_selector_directory_table()">Go</button>
+                </form>
+                <button onclick="selector_mkdir()">New directory</button>
+                <button onclick="selector_to_parent()">⬅️</button>
+                <button onclick="selector_to_home()">🏠</button>
+            </div>
+            <div id="path_selector_list">
+                <ul id="path_selector_ul">
+                    <!-- path list -->
+                </ul>
+            </div>
+            <button id="path_selector_cancel" onclick="close_path_selector()">Cancel</button>
+            <button id="path_selector_ok" onclick="ok_path_selector()">OK</button>
+        </div>
+    </div>
     
     <main>
         <!-- Section of files -->

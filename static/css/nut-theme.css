@@ -93,3 +93,14 @@ footer {
 #plugin_frame {
     border: #aaaaaa 1px solid;
 }
+
+/*
+    path selector
+*/
+#path_selector {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#path_selector_container {
+    background-color: antiquewhite;
+}
