@@ -1,38 +1,154 @@
+## 0.9.1 Minor Release
+
+Focus: Search improvements, file sorting, optional torrent support. Stability-focused.
+
+### ✅ Goals:
+
+* Add flexible search parser
+* Add file sorting options
+* Optional: Add torrent download support
+* Under-the-hood logging improvements
+* Minor UI enhancement foundations
+
+### 📝 TODO List:
+
+#### 🔍 Search Parser
+
+* [ ] Design search expression grammar (support `&`, `|`, `NOT`, `TAG`, `TYPE`)
+* [ ] Implement parser (possibly with `lark`, `pyparsing`, or hand-rolled recursive descent)
+* [ ] Integrate with file metadata and filtering logic
+* [ ] Add test cases for parsing edge cases
+* [ ] Add fallback mode: `"abc"` as fuzzy substring match
+
+#### 📁 File Sorting
+
+* [x] Add UI control (e.g., dropdown: Name, Size, Time)
+* [x] Backend sorting logic
+* [x] Store last used sort option in session
+
+#### 🌐 Torrent Support (Optional)
+
+* [ ] Choose backend library (e.g. `libtorrent`, `aria2`, `webtorrent`)
+* [ ] Provide basic UI for adding `.torrent` file or magnet link
+* [ ] Monitor progress and display file list
+* [ ] Route downloaded content into user’s cloud directory
+
+#### 🪵 Logging
+
+* [ ] Add structured log statements to major code paths (e.g., file ops, auth, system ops)
+* [ ] Support toggling debug/info level in config
+* [ ] Route logs to rotating log file or journald
+
+### 🙅 Custom 404 page
+
+* [ ] Custom 404 page in the style of *-theme.css 
+
+---
+
+## 0.10.0 Major Release
+
+Focus: Plugin website, full WebDAV support, code refactor, testing, and extensibility.
+
+### ✅ Goals:
+
+* Full WebDAV support (start from scratch)
+* Plugin website / plugin manager
+* Basic unit and integration tests
+* Code refactor for clarity and structure
+* Add file version control
+* Add media streaming support
+* Disk management UI improvements
+* Optional systemd-based deployment mode (non-Docker)
+* Backup system (disk mount + config)
+
+### 📝 TODO List:
+
+#### 🌐 WebDAV Support
+
+* [ ] Create a standalone WebDAV layer (either from spec or use `wsgidav`)
+* [ ] Map routes to Squirrel's file provider
+* [ ] Support PROPFIND, GET, PUT, DELETE
+* [ ] Permissions integration
+* [ ] WebDAV-specific tests
+
+#### 🔌 Plugin Website
+
+* [ ] Build plugin index frontend (listing + search)
+* [ ] Design plugin metadata format (e.g., `plugin.json`)
+* [ ] Add in-app plugin manager (install/enable/remove)
+
+#### 🧪 Testing System
+
+* [ ] Set up `pytest` framework
+* [ ] Write tests for core features (auth, file CRUD, tag, search)
+* [ ] Add disk mounting mock tests (non-root)
+* [ ] Optionally run CI via GitHub Actions
+
+#### ♻️ Code Refactor
+
+* [ ] Split platform-dependent logic (Docker vs native)
+* [ ] Abstract restart logic, system tools, env detection
+* [ ] Move disk/system logic to `core/system/`
+* [ ] Rename unclear variables/functions
+
+#### 🕘 File Version Control
+
+* [ ] Decide versioning method: file copies or content diffs
+* [ ] Track metadata: versions, timestamps, deltas
+* [ ] UI for viewing, comparing, and restoring past versions
+
+#### 🎥 Media Streaming
+
+* [ ] Add MIME detection and `Content-Range` support for video
+* [ ] Support progressive streaming
+* [ ] Optional transcoding backend (e.g., `ffmpeg`, `streamlink`)
+
+#### 🎨 Better Disk Management UI
+
+* [ ] Redesign disk panel (list, partitions, RAID, format options)
+* [ ] Show mount status, usage, filesystem type
+* [ ] UI triggers system calls or squirrel-agent
+
+#### 💾 Backup System
+
+* [ ] User config for backup mount (path, schedule, target disk)
+* [ ] UI for creating backup configuration
+* [ ] Scheduled task (or manual trigger) to sync data
+* [ ] Detect disk availability
+
+#### 🖥️ Systemd Native Deployment Support
+
+* [ ] Provide install script for systemd deployment
+* [ ] Create service unit template
+* [ ] Document restart behavior without Docker
+
+#### 👌 UI Improvements
+
+* [ ] Use more icon instead of text and emoji
+
+---
+
 [ ] Regulate path before inserting it into database.
-[ ] Customer 404 Page.
-[ ] Disk management.
 [ ] 支持多个主存储目录
 [ ] Is it right to query disk space in a docker containner?
 [ ] UI可以选择分享外链的过期时间
 [ ] 自动从本地文件夹中导入文件
-[ ] 按标签搜索
 [ ] 隐私目录，仅搜索可见
 [ ] 手动上传更新
 [ ] 更新服务器部署教程
 [ ] app部署教程
 [ ] 预览文本只能保存到新文件，有点不方便
 [ ] 个人磁盘用量查看
-[ ] 管理员磁盘用量管理
-[ ] 用icon替代emoji按钮
 [ ] Seeking hanging file.
 [ ] 将颜色、样式等与主题有关的CSS移动到xxx-theme.css中
-[ ] 为不同类型的文件创建图标
 [ ] 用户可在Account tab里面更新个人信息
 [ ] 实现一个python客户端库
 [ ] 在客户端库的基础上实现客户端
-[ ] 管理员插件管理：安装、移除、更新等
-[ ] 让移动文件的接口更好用
-[ ] 更多离线下载协议（种子等）
 [ ] 智能标签
-[ ] py文件越来越长，需要合理分割一下
-[ ] 支持视频、音频等流媒体传输
-[ ] 支持webdav
-[ ] 整理js代码，将功能与接口请求分离
-[ ] backup
-[ ] 文件版本控制
 [ ] 可创建新文本文件
 [ ] Bug: HTTP下载列表刷新不正常
 
+[x] 让移动文件的接口更好用
 [x] 新增设置：上传黑名单（文件名、等属性）
 [x] zip形式下载文件夹
 [x] 管理员可在web上修改及更新update server
