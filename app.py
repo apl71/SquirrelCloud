@@ -1,6 +1,6 @@
 from flask import Flask
 import tomllib
-import db.init, db.file, db.auth
+import db.init
 import utils
 import os, importlib
 
