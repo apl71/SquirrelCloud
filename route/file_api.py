@@ -201,12 +201,14 @@ def list():
         return jsonify(result)
     ## get requested path to delete
     filepath = request.args.get("path")
+    sort_by = request.args.get("sort_by")
+    sort_order = request.args.get("sort")
     ## check if the path exists
     if not file.directory_exists(conn, user_uuid, filepath):
         result["message"] = "Directory does not exist."
         return jsonify(result)
     ## get file infomations
-    file_infos = file.list_file(conn, user_uuid, filepath)
+    file_infos = file.list_file(conn, user_uuid, filepath, sort_by=sort_by, sort=sort_order)
     result["files"] = file_infos
     result["result"] = "OK"
     result["message"] = "Success."

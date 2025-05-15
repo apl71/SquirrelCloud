@@ -75,14 +75,12 @@
             <table id="file_table">
                 <tr>
                     <th></th> <!-- file or directory icon -->
-                    <th>Name</th>
-                    <th>Size</th>
-                    <th>Tags</th>
-                    <th>Remark</th>
-                    <th>Time Created</th>
-                    <!-- <th>Delete</th> -->
+                    <th><label>Name</label><a id="sort_path" class="sort" onclick="update_sort('path')">➖</a></th>
+                    <th><label>Size</label><a id="sort_size" class="sort" onclick="update_sort('size')">➖</a></th>
+                    <th><label>Tags</label></th>
+                    <th><label>Remark</label></th>
+                    <th><label>Time Created</label><a id="sort_create_at" class="sort" onclick="update_sort('create_at')">➖</a></th>
                     <th>Pin</th>
-                    <!-- <th>Share</th> -->
                 </tr>
             </table>
         </section>

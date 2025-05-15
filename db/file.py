@@ -127,9 +127,16 @@ def remove_dir(conn, user_uuid: str, path: str):
     return True
 
 ## get file infomation under specific path
-def list_file(conn, user_uuid: str, path: str, link: bool = True) -> list:
+def list_file(conn, user_uuid: str, path: str, link: bool = True, sort_by = "path", sort = "ASC") -> list:
     query = "{}%".format(path)
-    sql = "SELECT path, size, type, remark, create_at, pinned, tag_uuid FROM File WHERE owner_uuid = %s AND path LIKE %s AND path NOT LIKE %s AND path != %s"
+    ## process the sort key and order
+    if sort_by not in ["path", "size", "type", "create_at"]:
+        sort_by = "path"
+    if sort not in ["ASC", "DESC"]:
+        sort = "ASC"
+    if sort_by == "path":
+        sort_by = "regexp_replace(path, '^.*/', '')"
+    sql = "SELECT path, size, type, remark, create_at, pinned, tag_uuid FROM File WHERE owner_uuid = %s AND path LIKE %s AND path NOT LIKE %s AND path != %s ORDER BY pinned DESC, {} {}".format(sort_by, sort)
     cursor = conn.cursor()
     cursor.execute(sql, (user_uuid, query, "{}_%/%".format(path), path))
     result = cursor.fetchall()

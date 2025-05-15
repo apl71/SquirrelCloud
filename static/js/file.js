@@ -3,6 +3,78 @@ async function load() {
     load_selector_directory_table();
     set_right_click_menu();
     load_theme();
+    load_sort_ui();
+}
+
+const asc_icon = "▲";
+const desc_icon = "▼";
+const none_icon = "➖";
+
+// load initial ui for sort
+function load_sort_ui() {
+    const sort_by = load_sort_by_setting();
+    const sort = load_sort_setting();
+    if (sort == "ASC") {
+        document.getElementById("sort_" + sort_by).innerHTML = asc_icon;
+    } else if (sort == "DESC") {
+        document.getElementById("sort_" + sort_by).innerHTML = desc_icon;
+    } else {
+        document.getElementById("sort_" + sort_by).innerHTML = none_icon;
+    }
+}
+
+function load_sort_by_setting() {
+    return getCookie("sort_by");
+}
+
+function load_sort_setting() {
+    return getCookie("sort");
+}
+
+function save_sort_by_setting(key) {
+    const current_sort_by = load_sort_by_setting();
+    if (current_sort_by == key) {
+        const current_sort = load_sort_setting();
+        if (current_sort == "ASC") {
+            save_sort_setting("DESC");
+            return;
+        } else if (current_sort == "DESC") {
+            save_sort_setting("NONE");
+            return;
+        } else {
+            save_sort_setting("ASC");
+            return;
+        }
+    } else {
+        document.cookie = "sort_by=" + key;
+        save_sort_setting("ASC");
+        return;
+    }
+}
+
+function save_sort_setting(sort) {
+    document.cookie = "sort=" + sort;
+}
+
+function update_sort(key) {
+    save_sort_by_setting(key);
+    const current_sort = load_sort_setting();
+    const icon = document.getElementById("sort_" + key);
+    // reset all icons
+    const icons = document.getElementsByClassName("sort");
+    for (let i = 0; i < icons.length; i++) {
+        icons[i].innerHTML = "➖";
+    }
+    // set the current icon
+    if (current_sort == "ASC") {
+        icon.innerHTML = asc_icon;
+    } else if (current_sort == "DESC") {
+        icon.innerHTML = desc_icon;
+    } else {
+        icon.innerHTML = none_icon;
+    }
+    // refresh the file list
+    load_files();
 }
 
 // this variable is used to store the source path of the file to be moved
@@ -103,6 +175,13 @@ function compute_size(path) {
 }
 
 async function get_files_in_directory(path) {
+    // get sort settings
+    let sort_by = load_sort_by_setting();
+    let sort = load_sort_setting();
+    if (sort == "NONE"){
+        sort_by = "path";
+        sort = "ASC";
+    }
     // check if the path exists
     params = new URLSearchParams({
         "type": "TYPE_DIR",
@@ -128,7 +207,9 @@ async function get_files_in_directory(path) {
     }
     // get files under the path
     params = new URLSearchParams({
-        "path": path
+        "path": path,
+        "sort_by": sort_by,
+        "sort": sort
     }).toString();
     response = await fetch("/api/list?" + params, {
         method: "GET",
