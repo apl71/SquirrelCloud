@@ -5,6 +5,7 @@ import uuid
 import os
 import shutil
 from db import auth, notification
+import utils
 
 ## check if a user owns a directory
 def directory_exists(conn, user_uuid: str, path: str) -> bool:
@@ -207,9 +208,17 @@ def create_directory(conn, user_uuid: str, newdir: str, recursive: bool = False)
 
 ## search file or directory containing certain substring
 def search(conn, user_uuid: str, query: str) -> list:
-    sql = "SELECT path, size, type, remark, create_at, pinned, tag_uuid FROM File WHERE owner_uuid = %s AND path LIKE %s"
+    tokens = utils.tokenize(query)
+    parser = utils.Parser(tokens)
+    ast = parser.parse()
+    where_sql, params = utils.ast_to_sql(ast)
+    params["owner_uuid"] = user_uuid
+    #sql = "SELECT path, size, type, remark, create_at, pinned, tag_uuid FROM File WHERE owner_uuid = %s AND path LIKE %s"
+    sql = "SELECT path, size, type, remark, create_at, pinned, tag_uuid FROM File WHERE owner_uuid = %(owner_uuid)s AND {}".format(where_sql)
+    print(sql, params)
     cursor = conn.cursor()
-    cursor.execute(sql, (user_uuid, "%{}%".format(query)))
+    #cursor.execute(sql, (user_uuid, "%{}%".format(query)))
+    cursor.execute(sql, params)
     result = cursor.fetchall()
     file_infos = []
     for info in result:
