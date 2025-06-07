@@ -9,14 +9,16 @@ Focus: Search improvements, file sorting, optional torrent support. Stability-fo
 * Optional: Add torrent download support
 * Under-the-hood logging improvements
 * Minor UI enhancement foundations
+* More flexible app updating: auto-restart for non-docker installation
+* Export and import database
 
 ### 📝 TODO List:
 
 #### 🔍 Search Parser
 
-* [ ] Design search expression grammar (support `&`, `|`, `NOT`, `TAG`, `TYPE`)
-* [ ] Implement parser (possibly with `lark`, `pyparsing`, or hand-rolled recursive descent)
-* [ ] Integrate with file metadata and filtering logic
+* [x] Design search expression grammar (support `&`, `|`, `NOT`, `TAG`, `TYPE`)
+* [x] Implement parser (possibly with `lark`, `pyparsing`, or hand-rolled recursive descent)
+* [x] Integrate with file metadata and filtering logic
 * [ ] Add test cases for parsing edge cases
 * [ ] Add fallback mode: `"abc"` as fuzzy substring match
 
@@ -38,10 +40,19 @@ Focus: Search improvements, file sorting, optional torrent support. Stability-fo
 * [ ] Add structured log statements to major code paths (e.g., file ops, auth, system ops)
 * [ ] Support toggling debug/info level in config
 * [ ] Route logs to rotating log file or journald
+* [ ] Query and configure logs on web UI by administrator
 
-### 🙅 Custom 404 page
+#### 🙅 Custom 404 page
 
 * [ ] Custom 404 page in the style of *-theme.css 
+
+#### ⚙️ Auto-restart for non-docker installation
+
+* [ ] Auto-restart for non-docker installation
+
+#### 📊 Export and import database
+
+* [ ] Admin user can export and import database from web.
 
 ---
 
@@ -60,6 +71,7 @@ Focus: Plugin website, full WebDAV support, code refactor, testing, and extensib
 * Disk management UI improvements
 * Optional systemd-based deployment mode (non-Docker)
 * Backup system (disk mount + config)
+* Better UI on mobile devices
 
 ### 📝 TODO List:
 
@@ -125,6 +137,7 @@ Focus: Plugin website, full WebDAV support, code refactor, testing, and extensib
 #### 👌 UI Improvements
 
 * [ ] Use more icon instead of text and emoji
+* [ ] Enhance UI for mobile devices
 
 ---
 
