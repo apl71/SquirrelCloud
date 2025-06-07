@@ -86,26 +86,14 @@ td {
     padding-left: 2px;
 }
 
-/* remark */
-/* [id$='_remark_container'] {
-    height: 100%;
-    display: flex;
-}
-
-[id$='_remark'] {
-    flex: 1;
-} */
 [id$='_remark'] {
     width: 80%;
 }
+
 /* text align for create time, delete button, pin/unpin button */
 .create_time {
     text-align: center;
 }
-/* .delete_td, .pin_td, .share_td {
-    display: flex;
-    justify-content: center;
-} */
 
 /*
     upload section
@@ -207,4 +195,51 @@ td {
     list-style-type: circle;
     padding: 0;
     margin: 0;
+}
+
+/* for mobile compatible */
+.file-meta {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    /* 2a) Hide all TH and TD except the 2nd column (Name) */
+    #file_table tr th,
+    #file_table tr td:not(:nth-child(2)):not(:nth-child(1)) {
+        display: none;
+    }
+
+    /* 2b) Make the Name cell a full-width block */
+    #file_table tbody td:nth-child(2) {
+        display: block;
+        width: 100%;
+        padding: 0.5rem;
+        box-sizing: border-box;
+    }
+
+    /* 2c) Show the metadata under the filename */
+    .file-meta {
+      display: block;
+      margin-top: 0.25rem;
+      color: #777;
+      font-size: 0.85em;
+      line-height: 1.3;
+    }
+
+    /* 2d) Put a “•” between each item in the meta row */
+    .file-meta span:not(:last-child)::after {
+        content: " • ";
+    }
+
+    html {
+        overflow: hidden;
+    }
+
+    #upload_container {
+        flex-direction: column;
+    }
+
+    #upload_container p {
+        display: none;
+    }
 }

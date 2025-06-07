@@ -348,7 +348,43 @@ async function load_file_table(data) {
             }
         }
         pin_td.appendChild(pin_button);
-
+        // ------------------------------------ row ------------------------------------
+        // generate file-meta div for phone
+        let file_meta_div = document.createElement("div");
+        file_meta_div.className = "file-meta";
+        // size
+        if (element["type"] != "TYPE_DIR") {
+            let size_span = document.createElement("span");
+            size_span.className = "file-meta-size";
+            size_span.innerText = user_friendly_size(Number(element["size"]));
+            file_meta_div.appendChild(size_span);
+        }
+        // tags
+        if (element["tags"].length > 0) {
+            let tags_span = document.createElement("span");
+            tags_span.className = "file-meta-tags";
+            element["tags"].forEach(tag => {
+                let tag_span = document.createElement("span");
+                tag_span.className = "file-meta-tag";
+                tag_span.innerText = tag;
+                tags_span.appendChild(tag_span);
+            });
+            file_meta_div.appendChild(tags_span);
+        }
+        // remark
+        if (element["remark"] == "") {
+            let remark_span = document.createElement("span");
+            remark_span.className = "file-meta-remark";
+            remark_span.innerText = element["remark"];
+            file_meta_div.appendChild(remark_span);
+        }
+        // created time
+        let created_span = document.createElement("span");
+        created_span.className = "file-meta-created";
+        created_span.innerText = convertDateFormat(element["create_at"]);
+        file_meta_div.appendChild(created_span);
+        filename_td.appendChild(file_meta_div);
+        // complete the row
         row.appendChild(icon_td);
         row.appendChild(filename_td);
         row.appendChild(size);

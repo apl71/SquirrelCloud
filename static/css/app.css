@@ -27,6 +27,17 @@ header {
     padding: 0;
 }
 
+/* hide the h1 on narrow (phone-size) screens */
+@media (max-width: 600px) {
+    h1 {
+        display: none;
+    }
+    #version_number {
+        display: none;
+    }
+}
+
+
 nav {
     flex: 1;
     margin: 0;
