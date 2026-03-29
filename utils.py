@@ -58,7 +58,6 @@ def log(level: int, data: str):
     log_file = "{}/LOG_{}.log".format(current_app.config["LOG_PATH"], log_file_time)
 
     try:
-        # 尝试打开文件
         with open(log_file, 'a') as f:
             f.write("[{}][{}] {}\n".format(log_time, log_level_to_str(level), data))
     except FileNotFoundError:
