@@ -1,18 +1,22 @@
 ## 0.9.1 Minor Release
 
-Focus: Search improvements, file sorting, optional torrent support. Stability-focused.
+Focus: Stability, robustness, reliability, security hardening, and test coverage. Finish polishing existing features instead of adding new ones.
 
 ### ✅ Goals:
 
-* Add flexible search parser
-* Add file sorting options
-* Optional: Add torrent download support
-* Under-the-hood logging improvements
-* Minor UI enhancement foundations
-* More flexible app updating: auto-restart for non-docker installation
-* Export and import database
+* Fix high-priority bugs in existing features
+* Improve robustness and reliability of core flows
+* Harden authentication, file handling, update flow, and plugin safety
+* Expand automated test coverage for auth, file, share, and invalid-input cases
+* Improve logging, error handling, and restart/update safety
+* Polish existing admin and maintenance capabilities
 
-### 📝 TODO List:
+#### 🛡️ Reliability / Security / Testing First
+
+* [ ] Triage and fix the high-priority bugs listed in the code review summary
+* [ ] Prioritize hardening over new features for 0.9.1
+* [ ] Treat new features as 0.10.0 work unless they directly support robustness/testing
+* [ ] Define a minimal 0.9.1 release gate: key bugs fixed, core tests passing, no known critical security issue
 
 #### 🔍 Search Parser
 
@@ -28,8 +32,9 @@ Focus: Search improvements, file sorting, optional torrent support. Stability-fo
 * [x] Backend sorting logic
 * [x] Store last used sort option in session
 
-#### 🌐 Torrent Support (Optional)
+#### 🌐 Torrent Support (Deferred)
 
+* [ ] Defer torrent support to 0.10.0 unless it is needed for testing/refactoring existing download infrastructure
 * [ ] Choose backend library (e.g. `libtorrent`, `aria2`, `webtorrent`)
 * [ ] Provide basic UI for adding `.torrent` file or magnet link
 * [ ] Monitor progress and display file list
@@ -41,6 +46,9 @@ Focus: Search improvements, file sorting, optional torrent support. Stability-fo
 * [ ] Support toggling debug/info level in config
 * [ ] Route logs to rotating log file or journald
 * [ ] Query and configure logs on web UI by administrator
+* [ ] Add secure cookie settings (`SameSite`, configurable `secure`, cookie clear on logout)
+* [ ] Harden auth API input validation and error handling (missing JSON fields, invalid request body, consistent status codes)
+* [ ] Remove global database connection import from routes; use `current_app.conn` or app context instead
 
 #### 🙅 Custom 404 page
 
@@ -54,14 +62,46 @@ Focus: Search improvements, file sorting, optional torrent support. Stability-fo
 
 * [ ] Admin user can export and import database from web.
 
+#### 🔐 Security Hardening
+
+* [ ] Replace weak password hash salt scheme in `db/auth.py` (`gen_salt('md5')`) with a stronger password hash
+* [ ] Define explicit read/write/delete permissions for shared-link paths
+* [ ] Normalize and validate virtual paths / uploaded filenames before inserting into DB
+* [ ] Review auth/session cookies: `SameSite`, configurable `secure`, and explicit cookie clearing on logout
+* [ ] Add checksum/signature validation and structure checks for plugin zip installation
+* [ ] Harden update/install flows that unzip remote archives into the application/plugin directories
+
+#### 🧱 Robustness and Maintainability
+
+* [ ] Remove global DB connection imports from routes; use `current_app.conn` / app context
+* [ ] Add centralized permission/session guard helper or decorators for routes
+* [ ] Add request-body validation for auth/file/system APIs (missing JSON, invalid types, bad content-type)
+* [ ] Return more appropriate HTTP status codes (`400/401/403/...`) instead of always returning `200` with `FAIL`
+* [ ] Add timeouts and exception handling for update/version-check network requests
+* [ ] Replace broad `pkill python` / `pkill gunicorn` restart logic with safer process management
+* [ ] Replace `os.system(...)` update/install shell calls with safer subprocess usage
+* [ ] Use context-managed cursors / ensure cursor close in all DB helper paths
+* [ ] Revisit `check_session()` cleanup strategy so every request does not first delete expired sessions globally
+* [ ] Add locking / safer state management for HTTP download task progress
+
+#### 🧪 Test Completion
+
+* [ ] Move from a fixed local DB DSN to a clearer isolated test database / test config
+* [ ] Improve test isolation (avoid one shared mutable DB state across the whole test session)
+* [ ] Add API tests for invalid JSON bodies, missing fields, permission failures, and file/share edge cases
+* [ ] Add tests for auth/session cookie behavior and logout cleanup
+* [ ] Add regression tests for every high-priority bug fixed in 0.9.1
+* [ ] Define a small 0.9.1 test matrix for auth, file CRUD, sharing, external link, and HTTP download tasks
+
 ---
 
 ## 0.10.0 Major Release
 
-Focus: Plugin website, full WebDAV support, code refactor, testing, and extensibility.
+Focus: New features and larger refactors after 0.9.1 hardening is complete.
 
 ### ✅ Goals:
 
+* Pick up deferred feature work after 0.9.1 hardening/test completion
 * Full WebDAV support (start from scratch)
 * Plugin website / plugin manager
 * Basic unit and integration tests
@@ -141,7 +181,10 @@ Focus: Plugin website, full WebDAV support, code refactor, testing, and extensib
 
 ---
 
+[ ] 大目录下载的streaming zip
 [ ] Regulate path before inserting it into database.
+[ ] Add centralized permission/session guard helper for routes to avoid duplicated auth checks.
+[ ] Review file and plugin APIs for path traversal / privilege escalation risks.
 [ ] 支持多个主存储目录
 [ ] Is it right to query disk space in a docker containner?
 [ ] UI可以选择分享外链的过期时间
