@@ -19,16 +19,25 @@ def app():
     ## drop all table in database and recreate for testing
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute(open("testing/drop.sql").read())
+    cursor.execute(open("test/drop.sql").read())
     conn.commit()
     cursor.close()
     conn.close()
 
     ## start app
     app = create_app()
+
+    ## initialize database for testing
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(open("test/test_data.sql").read())
+    conn.commit()
+    cursor.close()
+    conn.close()
+
     return app
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def client(app):
     with warnings.catch_warnings():
         warnings.filterwarnings('ignore', category=DeprecationWarning)

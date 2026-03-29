@@ -8,9 +8,21 @@ auth_api = Blueprint("auth_api", __name__)
 
 @auth_api.route("/api/login", methods=["POST"])
 def login():
-    request_data = request.get_json()
-    username = request_data["username"]
-    password = request_data["password"]
+    request_data = request.get_json(silent=True)
+    if not isinstance(request_data, dict):
+        utils.log(utils.LEVEL_INFO, "Login fail: invalid or missing JSON body.")
+        return jsonify({"result": "FAIL", "message": "Invalid request body."})
+
+    required_keys = {"username", "password"}
+    if not required_keys.issubset(request_data.keys()):
+        utils.log(utils.LEVEL_INFO, "Login fail: missing username/password fields.")
+        return jsonify({"result": "FAIL", "message": "Missing username or password."})
+
+    username = request_data.get("username")
+    password = request_data.get("password")
+    if not isinstance(username, str) or not isinstance(password, str):
+        utils.log(utils.LEVEL_INFO, "Login fail: username/password must be strings.")
+        return jsonify({"result": "FAIL", "message": "Invalid username or password."})
     ## check password in database
     uuid, session = auth.check_user_login(conn, username, password)
     admin = auth.check_admin_user(conn, uuid)
@@ -83,11 +95,31 @@ def register():
         result["message"] = "You are not administrator."
         return jsonify(result)
     ## get information of new user
-    request_data = request.get_json()
-    username = request_data["username"]
-    password = request_data["password"]
-    admin = True if request_data["admin"] == "true" else False
-    email = request_data["email"]
+    request_data = request.get_json(silent=True)
+    if not isinstance(request_data, dict):
+        result["message"] = "Invalid request body."
+        return jsonify(result)
+
+    required_keys = {"username", "password", "admin", "email"}
+    if not required_keys.issubset(request_data.keys()):
+        result["message"] = "Missing required fields."
+        return jsonify(result)
+
+    username = request_data.get("username")
+    password = request_data.get("password")
+    admin_value = request_data.get("admin")
+    email = request_data.get("email")
+
+    if (
+        not isinstance(username, str)
+        or not isinstance(password, str)
+        or not isinstance(admin_value, str)
+        or not isinstance(email, str)
+    ):
+        result["message"] = "Invalid field types."
+        return jsonify(result)
+
+    admin = True if admin_value == "true" else False
     ## check if username already exists
     if auth.check_user_exist(conn, username):
         result["message"] = "Username is occupied. Try another!"
@@ -96,13 +128,14 @@ def register():
     if new_uuid == None:
         result["message"] = "Fail to create new user."
         return jsonify(result)
-    ## create root for new user
-    if not file.create_directory(conn, new_uuid, "/"):
-        result["message"] = "Fail to create root for new user."
+    ok, message = file.create_directory(conn, new_uuid, "/")
+    if not ok:
+        result["message"] = message
         return jsonify(result)
-    ## create recycle bin for new user
-    if not file.create_directory(conn, new_uuid, "/recycle"):
-        result["message"] = "Fail to create recycle bin for new user."
+
+    ok, message = file.create_directory(conn, new_uuid, "/recycle")
+    if not ok:
+        result["message"] = message
         return jsonify(result)
     result["result"] = "OK"
     utils.log(utils.LEVEL_INFO, "User {} created by admin.".format(username))
