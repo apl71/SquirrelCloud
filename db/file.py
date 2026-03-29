@@ -178,12 +178,33 @@ def get_directory_size(conn, user_uuid: str, path: str) -> int:
     return result[0][0]
 
 def create_directory(conn, user_uuid: str, newdir: str, recursive: bool = False) -> tuple[bool, str]:
+    sql = "INSERT INTO File (owner_uuid, type, path) VALUES (%s, 'TYPE_DIR', %s)"
+
+    def insert_directory(path: str) -> tuple[bool, str]:
+        cursor = conn.cursor()
+        try:
+            cursor.execute(sql, (user_uuid, path))
+            conn.commit()
+        except Exception as e:
+            message = "Fail to execute SQL statement in `create_directory()`: {}".format(e)
+            utils.log(utils.LEVEL_WARNING, message)
+            conn.rollback()
+            return False, message
+        cursor.close()
+        return True, "OK"
+
     ## end of recursion
     if directory_exists(conn, user_uuid, newdir) and recursive:
         return True, "OK"
+
     ## check if the name is used or not
     if directory_exists(conn, user_uuid, newdir) or file_exists(conn, user_uuid, newdir):
         return False, "File or directory is already exists."
+
+    ## root directory has no parent to validate
+    if newdir == "/":
+        return insert_directory(newdir)
+
     ## check if the parent path exists
     parent_path = str(os.path.dirname(newdir))
     if not directory_exists(conn, user_uuid, parent_path):
@@ -193,18 +214,8 @@ def create_directory(conn, user_uuid: str, newdir: str, recursive: bool = False)
             result, message = create_directory(conn, user_uuid, parent_path, recursive)
             if not result:
                 return result, message
-    sql = "INSERT INTO File (owner_uuid, type, path) VALUES (%s, 'TYPE_DIR', %s)"
-    cursor = conn.cursor()
-    try:
-        cursor.execute(sql, (user_uuid, newdir))
-        conn.commit()
-    except Exception as e:
-        message = "Fail to execute SQL statement in `create_directory()`: {}".format(e)
-        utils.log(utils.LEVEL_WARNING, message)
-        conn.rollback()
-        return False, message
-    cursor.close()
-    return True, "OK"
+
+    return insert_directory(newdir)
 
 ## search file or directory containing certain substring
 def search(conn, user_uuid: str, query: str) -> list:
