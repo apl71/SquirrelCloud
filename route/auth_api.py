@@ -62,9 +62,22 @@ def reset_password():
         result["message"] = "Your session is not valid."
         return jsonify(result)
     ## get new password from body
-    request_data = request.get_json()
-    old_password = request_data["old_password"]
-    new_password = request_data["new_password"]
+    request_data = request.get_json(silent=True)
+    if not isinstance(request_data, dict):
+        result["message"] = "Invalid request body."
+        return jsonify(result)
+
+    required_keys = {"old_password", "new_password"}
+    if not required_keys.issubset(request_data.keys()):
+        result["message"] = "Missing required fields."
+        return jsonify(result)
+
+    old_password = request_data.get("old_password")
+    new_password = request_data.get("new_password")
+
+    if not isinstance(old_password, str) or not isinstance(new_password, str):
+        result["message"] = "Invalid field types."
+        return jsonify(result)
     ## check if old_password is right
     username = auth.get_username_by_uuid(conn, user_uuid)
     user_uuid_2, _ = auth.check_user_login(conn, username, old_password)

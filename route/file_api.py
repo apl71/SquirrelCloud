@@ -12,6 +12,18 @@ import shutil
 
 file_api = Blueprint("file_api", __name__)
 
+def get_and_validate_path_arg(arg_name: str = "path") -> tuple[bool, str | None, str]:
+    """Read a path from query args and validate it."""
+    path = request.args.get(arg_name)
+    if path is None:
+        return False, None, "Path is not specified."
+
+    ok, message = utils.validate_virtual_path(path)
+    if not ok:
+        return False, None, message
+
+    return True, path, "OK"
+
 @file_api.route("/api/upload", methods=["POST"])
 def upload():
     result = {
@@ -199,8 +211,12 @@ def list():
     if not user_uuid:
         result["message"] = "Your session is not valid."
         return jsonify(result)
-    ## get requested path to delete
-    filepath = request.args.get("path")
+    ## get requested path
+    ok, filepath, message = get_and_validate_path_arg("path")
+    if not ok:
+        result["message"] = message
+        return jsonify(result)
+
     sort_by = request.args.get("sort_by")
     sort_order = request.args.get("sort")
     ## check if the path exists
@@ -252,7 +268,10 @@ def mkdir():
         result["message"] = "Your session is not valid."
         return jsonify(result)
     ## get requested path
-    newdir = request.args.get("path")
+    ok, newdir, message = get_and_validate_path_arg("path")
+    if not ok:
+        result["message"] = message
+        return jsonify(result)
     ## check if there is a link in the path
     target_user_uuid, target_path, _ = file.convert_path_with_link(conn, user_uuid, newdir)
     if target_user_uuid and target_path:
@@ -501,7 +520,11 @@ def file_exist():
         result["message"] = "Your session is not valid."
         return jsonify(result)
     ## check if it exists
-    path = request.args.get("path")
+    ok, path, message = get_and_validate_path_arg("path")
+    if not ok:
+        result["message"] = message
+        return jsonify(result)
+
     type = request.args.get("type")
     file_exist = file.file_exists(conn, user_uuid, path)
     dir_exist = file.directory_exists(conn, user_uuid, path)
