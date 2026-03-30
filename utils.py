@@ -367,6 +367,14 @@ def validate_virtual_path(path: str) -> tuple[bool, str]:
 
     return True, "OK"
 
+def make_result(success: bool, message: str = "", **extra) -> dict:
+    result = {
+        "result": "OK" if success else "FAIL",
+        "message": message,
+    }
+    result.update(extra)
+    return result
+
 if __name__ == "__main__":
     query = "(type:pdf OR type:docx) AND name:report"
     query = "name:Z3 AND (type:TYPE_FILE AND size > 1.2MB)"
