@@ -5,6 +5,7 @@ from flask import current_app
 import requests, re
 import subprocess, sys
 import re
+import unicodedata
 
 def hash_file(path: str) -> str:
     f = open(path, "rb")
@@ -311,6 +312,60 @@ def ast_to_sql(node, param_index=[0]):
             raise ValueError(f"Unknown field {fld!r}")
 
     raise ValueError(f"Unexpected AST node: {node}")
+
+_WINDOWS_RESERVED_NAMES = {
+    "CON", "PRN", "AUX", "NUL",
+    "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+    "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+}
+
+_FORBIDDEN_CHARS = set('<>:"/\\|?*')
+
+
+def validate_virtual_path(path: str) -> tuple[bool, str]:
+    """Validate a virtual absolute path like '/', '/A', '/A/B'."""
+
+    if not isinstance(path, str):
+        return False, "Path is not valid."
+
+    if path == "":
+        return False, "Path is not valid."
+
+    if not path.startswith("/"):
+        return False, "Path is not valid."
+
+    if path == "/":
+        return True, "OK"
+
+    if path.endswith("/"):
+        return False, "Path is not valid."
+
+    segments = path.split("/")[1:]
+
+    for segment in segments:
+        if segment == "":
+            return False, "Path is not valid."
+
+        # only reject exact '.' / '..'
+        if segment in {".", ".."}:
+            return False, "Path is not valid."
+
+        if segment.strip() == "":
+            return False, "Path is not valid."
+
+        if segment.endswith(" ") or segment.endswith("."):
+            return False, "Path is not valid."
+
+        if segment.upper() in _WINDOWS_RESERVED_NAMES:
+            return False, "Path is not valid."
+
+        for ch in segment:
+            if unicodedata.category(ch).startswith("C"):
+                return False, "Path is not valid."
+            if ch in _FORBIDDEN_CHARS:
+                return False, "Path is not valid."
+
+    return True, "OK"
 
 if __name__ == "__main__":
     query = "(type:pdf OR type:docx) AND name:report"
