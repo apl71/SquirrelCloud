@@ -16,7 +16,6 @@ def get_connection():
 
 @pytest.fixture(scope="session")
 def app():
-    ## drop all table in database and recreate for testing
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(open("test/drop.sql").read())
@@ -24,10 +23,8 @@ def app():
     cursor.close()
     conn.close()
 
-    ## start app
     app = create_app()
 
-    ## initialize database for testing
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(open("test/test_data.sql").read())
@@ -35,11 +32,11 @@ def app():
     cursor.close()
     conn.close()
 
-    return app
+    yield app
 
 @pytest.fixture
 def client(app):
     with warnings.catch_warnings():
-        warnings.filterwarnings('ignore', category=DeprecationWarning)
-        return app.test_client()
-
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        with app.test_client() as client:
+            yield client
