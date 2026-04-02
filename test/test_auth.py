@@ -137,9 +137,9 @@ def test_login_rejects_json_null_body(client):
 
 def test_session_status_redirects_without_session(app):
     """Unauthenticated requests to session_status should redirect to the login page."""
-    fresh_client = app.test_client()
-    response = fresh_client.get("/api/session_status", follow_redirects=False)
-    assert_redirects_to_login(response)
+    with app.test_client() as fresh_client:
+        response = fresh_client.get("/api/session_status", follow_redirects=False)
+        assert_redirects_to_login(response)
 
 
 def test_session_status_ok_after_login(client):
@@ -170,19 +170,19 @@ def test_logout_invalidates_current_session(client):
 
 def test_logout_without_session_is_handled_gracefully(app):
     """Calling logout without a session cookie should not crash the endpoint."""
-    fresh_client = app.test_client()
-    response = fresh_client.delete("/api/logout")
-    assert response.status_code == 200
-    assert response.get_json()["result"] == "OK"
+    with app.test_client() as fresh_client:
+        response = fresh_client.delete("/api/logout")
+        assert response.status_code == 200
+        assert response.get_json()["result"] == "OK"
 
 
 def test_logout_with_fake_session_is_handled_gracefully(app):
     """Calling logout with a fake session cookie should not crash the endpoint."""
-    fresh_client = app.test_client()
-    fresh_client.set_cookie("session", "fake-session-token")
-    response = fresh_client.delete("/api/logout")
-    assert response.status_code == 200
-    assert response.get_json()["result"] == "OK"
+    with app.test_client() as fresh_client:
+        fresh_client.set_cookie("session", "fake-session-token")
+        response = fresh_client.delete("/api/logout")
+        assert response.status_code == 200
+        assert response.get_json()["result"] == "OK"
 
 # --- Multi-session behavior tests -----------------------------------------
 

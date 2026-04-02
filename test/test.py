@@ -14,7 +14,7 @@ def get_connection():
     conn = psycopg2.connect(dsn)
     return conn
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def app():
     conn = get_connection()
     cursor = conn.cursor()
