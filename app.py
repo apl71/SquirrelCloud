@@ -1,24 +1,49 @@
-from flask import Flask
+from flask import Flask, g, current_app, has_app_context
 import tomllib
 import db.init
+import psycopg2
 import utils
 import os, importlib
 
 def create_connection(user, password, host, port, database):
     dsn = "postgresql://{}:{}@{}:{}/{}".format(user, password, host, port, database)
     try:
-        conn = db.init.initialize_database(dsn)
-        utils.log(utils.LEVEL_INFO, "Connect to database successfully.")
+        conn = psycopg2.connect(dsn)
+        if has_app_context():
+            utils.log(utils.LEVEL_INFO, "Connect to database successfully.")
     except Exception as e:
         print("Fail to connect to database.")
         print("Reason: {}".format(e))
-        utils.log(utils.LEVEL_CRITICAL, "Fail to connect to database.")
+        if has_app_context():
+            utils.log(utils.LEVEL_CRITICAL, "Fail to connect to database.")
         return None
     return conn
 
-conn = None
-
 plugin_list = []
+
+
+def get_db():
+    """Get a per-request database connection stored in Flask `g`."""
+    if "db_conn" not in g:
+        g.db_conn = create_connection(
+            current_app.config["DB_USER"],
+            current_app.config["DB_PWD"],
+            current_app.config["DB_HOST"],
+            current_app.config["DB_PORT"],
+            current_app.config["DB_NAME"],
+        )
+    return g.db_conn
+
+
+
+def close_db(e=None):
+    """Close the request-scoped database connection if it exists."""
+    conn = g.pop("db_conn", None)
+    if conn is not None:
+        try:
+            conn.close()
+        except Exception as exc:
+            utils.log(utils.LEVEL_WARNING, "Fail to close database connection: {}".format(exc))
 
 def load_plugin(app):
     plugin_dir = "./plugin"
@@ -39,9 +64,11 @@ def load_plugin(app):
             plugin_module = importlib.import_module("plugin.{}.{}".format(plugin_name, plugin_name))
             plugin_class = getattr(plugin_module, plugin_name)
             plugin = plugin_class()
-            result = plugin.register(app)
+            with app.app_context():
+                result = plugin.register(app)
+                if result["result"] == "OK":
+                    plugin_list.append(plugin.info())
             if result["result"] == "OK":
-                plugin_list.append(plugin.info())
                 print("Register plugin: {}".format(plugin_name))
                 loaded_num += 1
                 with app.app_context():
@@ -64,18 +91,24 @@ def create_app():
         utils.log(utils.LEVEL_CRITICAL, "Fail to read configuration file.")
         return None
 
-    ## initialize database connection
-    with app.app_context():
-        global conn
-        conn = create_connection(
-            app.config["DB_USER"],
-            app.config["DB_PWD"],
-            app.config["DB_HOST"],
-            app.config["DB_PORT"],
-            app.config["DB_NAME"]
-        )
-    ## pass connection to app, for plugin to use
-    app.conn = conn
+    ## initialize database schema
+    conn = create_connection(
+        app.config["DB_USER"],
+        app.config["DB_PWD"],
+        app.config["DB_HOST"],
+        app.config["DB_PORT"],
+        app.config["DB_NAME"],
+    )
+    if conn is None:
+        return None
+    cursor = conn.cursor()
+    cursor.execute(open("db/init.sql").read())
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    ## register request-scoped database lifecycle
+    app.teardown_appcontext(close_db)
 
     ## setting version
     app.config["VERSION"] = "0.9.0"
@@ -102,5 +135,7 @@ def create_app():
 
     app.config["MAX_CONTENT_LENGTH"] = None
 
-    return app
+    ## expose db accessor for plugins and other modules
+    app.get_db = get_db
 
+    return app
