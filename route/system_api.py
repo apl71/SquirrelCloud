@@ -1,5 +1,5 @@
 from flask import Blueprint, current_app, request, jsonify, redirect, url_for
-from app import conn
+from app import get_db
 from db import auth
 import shutil
 import utils
@@ -22,6 +22,7 @@ def version():
 
 @system_api.route("/api/check_update", methods=["GET"])
 def check_update():
+    conn = get_db()
     result = {
         "result": "FAIL",
         "message": ""
@@ -46,6 +47,7 @@ def check_update():
 
 @system_api.route("/api/update", methods=["GET"])
 def update_system():
+    conn = get_db()
     result = {
         "result": "FAIL",
         "message": "Success."
@@ -110,6 +112,7 @@ def update_system():
 
 @system_api.route("/api/disk_usage", methods=["GET"])
 def disk_usage():
+    conn = get_db()
     result = {
         "result": "FAIL",
         "message": "Success.",
@@ -137,6 +140,7 @@ def disk_usage():
 ## get all users, only for admin
 @system_api.route("/api/all_users", methods=["GET"])
 def all_users():
+    conn = get_db()
     result = {
         "result": "FAIL",
         "message": "Success.",
@@ -167,6 +171,7 @@ def get_theme():
 
 @system_api.route("/api/get_plugins", methods=["GET"])
 def get_plugins():
+    conn = get_db()
     result = {}
     ## get and check session
     session = request.cookies.get("session")
@@ -216,6 +221,7 @@ def get_remote_plugins():
 
 @system_api.route("/api/install_plugin", methods=["POST"])
 def install_plugin():
+    conn = get_db()
     result = {
         "result": "FAIL",
         "message": "Success. Restart server to take effect."
@@ -266,6 +272,7 @@ def host():
 
 @system_api.route("/api/config", methods=["GET", "POST"])
 def config():
+    conn = get_db()
     result = {
         "result": "FAIL",
         "message": "Success."

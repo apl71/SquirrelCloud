@@ -1,5 +1,5 @@
 from flask import Blueprint, current_app, request, jsonify, redirect
-from app import conn
+from app import get_db
 from db import auth
 from db import file
 import utils
@@ -24,6 +24,7 @@ def login():
         utils.log(utils.LEVEL_INFO, "Login fail: username/password must be strings.")
         return jsonify({"result": "FAIL", "message": "Invalid username or password."})
     ## check password in database
+    conn = get_db()
     uuid, session = auth.check_user_login(conn, username, password)
     admin = auth.check_admin_user(conn, uuid)
     success = True if uuid else False
@@ -46,6 +47,7 @@ def logout():
         "result": "OK"
     }
     session = request.cookies.get("session")
+    conn = get_db()
     auth.remove_session(conn, session)
     return jsonify(result)
 
@@ -55,6 +57,7 @@ def reset_password():
         "result": "FAIL",
         "message": "Password changed."
     }
+    conn = get_db()
     ## check session
     session = request.cookies.get("session")
     user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
@@ -98,6 +101,7 @@ def register():
         "result": "FAIL",
         "message": "User created."
     }
+    conn = get_db()
     ## check session, admin session required
     session = request.cookies.get("session")
     user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
@@ -157,6 +161,7 @@ def register():
 ## check if session is valid
 @auth_api.route("/api/session_status", methods=["GET"])
 def session_status():
+    conn = get_db()
     ## check session
     session = request.cookies.get("session")
     user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])

@@ -1,36 +1,31 @@
 from flask import Blueprint, current_app, request, jsonify
-from app import conn
+import utils
+from app import get_db
 from db import notification, auth
 
 function_api = Blueprint("notification_api", __name__)
 
 @function_api.route("/api/notification", methods=["GET", "DELETE"])
 def get_all_notifications():
-    result = {
-        "result": "FAIL",
-        "message": "Success."
-    }
+    conn = get_db()
+
     ## check session
     session = request.cookies.get("session")
     user_uuid = auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
     if not user_uuid:
-        result["message"] = "Your session is not valid."
-        return jsonify(result)
+        return jsonify(utils.make_result(False, "Your session is not valid."))
+
     if request.method == "GET":
         ## get notifications
         notifications = notification.get_all_notifications(conn, user_uuid)
-        result["result"] = "OK"
-        result["notifications"] = notifications
-        return jsonify(result)
+        return jsonify(utils.make_result(True, "Success.", notifications=notifications))
     elif request.method == "DELETE":
         ## delete notification
         request_data = request.get_json()
         notification_uuid = request_data["uuid"]
         if not notification_uuid:
-            result["message"] = "No notification uuid provided."
-            return jsonify(result)
+            return jsonify(utils.make_result(False, "No notification uuid provided."))
         if notification.remove_notification(conn, notification_uuid):
-            result["result"] = "OK"
+            return jsonify(utils.make_result(True, "Success."))
         else:
-            result["message"] = "Fail to delete notification."
-        return jsonify(result)
+            return jsonify(utils.make_result(False, "Fail to delete notification."))

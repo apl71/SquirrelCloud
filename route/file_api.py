@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, send_file, current_app
-from app import conn
+from app import get_db
 from db import file, auth, notification
 import os
 import pathlib
@@ -12,7 +12,7 @@ import shutil
 
 file_api = Blueprint("file_api", __name__)
 
-def get_valid_session_user():
+def get_valid_session_user(conn):
     """Return the current user UUID if the session is valid, otherwise None."""
     session = request.cookies.get("session")
     return auth.check_session(conn, session, current_app.config["SESSION_LIFESPAN"])
@@ -31,8 +31,9 @@ def get_and_validate_path_arg(arg_name: str = "path") -> tuple[bool, str | None,
 
 @file_api.route("/api/upload", methods=["POST"])
 def upload():
+    conn = get_db()
     ## check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
     ## check if there is a file part in post request
@@ -51,8 +52,9 @@ def upload():
     
 @file_api.route("/api/upload_directory", methods=["POST"])
 def upload_directory():
+    conn = get_db()
     ## check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
     ## get input path
@@ -85,8 +87,9 @@ def upload_directory():
 
 @file_api.route("/api/download", methods=["GET"])
 def download():
+    conn = get_db()
     ## check if session is valid
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
     ## get requested path
@@ -132,8 +135,9 @@ def download():
 
 @file_api.route("/api/delete", methods=["DELETE"])
 def delete():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
     ## get requested path to delete
@@ -165,8 +169,9 @@ def delete():
 
 @file_api.route("/api/list", methods=["GET"])
 def list():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
 
@@ -188,8 +193,9 @@ def list():
 
 @file_api.route("/api/directory_size", methods=["GET"])
 def directory_size():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
 
@@ -206,8 +212,9 @@ def directory_size():
 
 @file_api.route("/api/mkdir", methods=["POST"])
 def mkdir():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
 
@@ -232,8 +239,9 @@ def mkdir():
 
 @file_api.route("/api/fileid", methods=["GET"])
 def fileid():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
 
@@ -250,8 +258,9 @@ def fileid():
 
 @file_api.route("/api/search", methods=["GET"])
 def search():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
 
@@ -262,8 +271,9 @@ def search():
 
 @file_api.route("/api/remark", methods=["POST"])
 def update_remark():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
     ## get request data in body
@@ -279,8 +289,9 @@ def update_remark():
 
 @file_api.route("/api/rename", methods=["POST"])
 def rename():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
     ## get request data in body
@@ -319,8 +330,9 @@ def rename():
 
 @file_api.route("/api/pin", methods=["POST"])
 def pin_file():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
     ## get query string
@@ -334,8 +346,9 @@ def pin_file():
 
 @file_api.route("/api/tag", methods=["PUT", "GET", "DELETE"])
 def new_tag():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
     if request.method == "PUT":     ## create new tag
@@ -356,8 +369,9 @@ def new_tag():
     
 @file_api.route("/api/file_tag", methods=["PUT", "DELETE"])
 def attach_tag():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
     ## get vpath and tag
@@ -387,8 +401,9 @@ def attach_tag():
     
 @file_api.route("/api/file_exist", methods=["GET"])
 def file_exist():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
 
@@ -414,10 +429,11 @@ def file_exist():
 
 @file_api.route("/api/external_link", methods=["POST", "GET"])
 def external_link():
+    conn = get_db()
     ## create external link
     if request.method == "POST":
         ## get and check session
-        user_uuid = get_valid_session_user()
+        user_uuid = get_valid_session_user(conn)
         if not user_uuid:
             return jsonify(utils.make_result(False, "Your session is not valid."))
         ## get params
@@ -453,8 +469,9 @@ def external_link():
 
 @file_api.route("/api/all_external_links", methods=["GET"])
 def all_external_link():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
     links = file.get_all_external_links(conn, user_uuid)
@@ -462,8 +479,9 @@ def all_external_link():
 
 @file_api.route("/api/remove_external_link", methods=["DELETE"])
 def remove_external_link():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
     key = request.args.get("key")
@@ -474,9 +492,10 @@ def remove_external_link():
 
 @file_api.route("/api/replica", methods=["GET"])
 def replica():
+    conn = get_db()
     ## return if user owns the same file 
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
     ## check if it exists
@@ -488,8 +507,9 @@ def replica():
 
 @file_api.route("/api/replica_list", methods=["GET"])
 def replica_list():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
     files = file.find_replicas(conn, user_uuid)
@@ -497,8 +517,9 @@ def replica_list():
 
 @file_api.route("/api/http_download", methods=["POST"])
 def http_download():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
     url = request.args.get("url")
@@ -511,8 +532,9 @@ def http_download():
 
 @file_api.route("/api/http_download_tasks", methods=["GET"])
 def http_download_tasks():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
     ## WARNING: No authentication here
@@ -530,8 +552,9 @@ def http_download_tasks():
 
 @file_api.route("/api/http_download_stop", methods=["DELETE"])
 def http_download_stop():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
     ## WARNING: No authentication here
@@ -547,9 +570,10 @@ def http_download_stop():
 ## PUT:  accept a share request from another user
 @file_api.route("/api/share_request", methods=["POST", "PUT"])
 def share_request():
+    conn = get_db()
     ## get and check session
     if request.method == "POST":
-        from_user_uuid = get_valid_session_user()
+        from_user_uuid = get_valid_session_user(conn)
         if not from_user_uuid:
             return jsonify(utils.make_result(False, "Your session is not valid."))
         ## get data
@@ -573,7 +597,7 @@ def share_request():
             utils.log(utils.LEVEL_INFO, "User [{}] send a share request to [{}] for [{}]".format(from_user_uuid, target_user_uuid, share_path))
             return jsonify(utils.make_result(False, "Fail to create share request."))
     elif request.method == "PUT":
-        to_user_uuid = get_valid_session_user()
+        to_user_uuid = get_valid_session_user(conn)
         if not to_user_uuid:
             return jsonify(utils.make_result(False, "Your session is not valid."))
         ## get data
@@ -599,8 +623,9 @@ def share_request():
     
 @file_api.route("/api/upload_filter", methods=["GET", "PUT", "POST", "DELETE"])
 def upload_filter():
+    conn = get_db()
     ## get and check session
-    user_uuid = get_valid_session_user()
+    user_uuid = get_valid_session_user(conn)
     if not user_uuid:
         return jsonify(utils.make_result(False, "Your session is not valid."))
     if request.method == "GET":
